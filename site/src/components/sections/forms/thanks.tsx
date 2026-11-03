@@ -89,7 +89,8 @@ export function BookingThanks({
   const state = useReplyState()
   const consultation = kind === 'consultation' || format === 'video' || format === 'call'
   return (
-    <div className="flex flex-col gap-6" role="status">
+    // `data-reveal="items"`: the lines rise in turn when the screen appears (motion late-nodes).
+    <div className="flex flex-col gap-6" role="status" data-reveal="items">
       <h3 ref={headingRef} tabIndex={-1} className="type-d2">
         {consultation ? 'Записали на консультацию' : 'Записали на просмотр'}
       </h3>

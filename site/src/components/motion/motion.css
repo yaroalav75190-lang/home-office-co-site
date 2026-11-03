@@ -5,12 +5,66 @@
  * globals.css) shows everything if GSAP never adds `motion-ready`.
  */
 
-/* ───────────── Coast drawn on enter (`data-coast-draw`) ───────────── */
+/* ───────────── Drawn on enter: every <Coast> and <Locator> in the page and the footer ─────────────
+ * (motion-root.tsx draws them; `data-coast-draw` is kept on the markup but no longer required).
+ * The header's panel art and the curtain art are outside <main> and stay as they are. */
 @media (prefers-reduced-motion: no-preference) {
-  html.js:not(.motion-ready) [data-coast-draw] {
+  html.js:not(.motion-ready) :is(main, footer) :is(svg[data-coast], svg[data-locator]) {
     opacity: 0;
     animation: hoc-reveal-failsafe 1ms linear 2.5s both;
   }
+}
+
+/* ───────────── Tinted fields arrive as a block (`data-surface`, reveals.ts `revealSurface`) ─────────────
+ * The section is clipped to its top edge until GSAP unrolls it; same failsafe as the reveals. */
+@media (prefers-reduced-motion: no-preference) {
+  html.js:not(.motion-ready) :is(main [data-surface], footer[data-surface]) {
+    clip-path: inset(0 0 100% 0);
+    animation: hoc-reveal-failsafe 1ms linear 2.5s both;
+  }
+}
+
+/* ───────────── Figures alive on hover (figure.tsx `data-figure`) ─────────────
+ * The image eases to 1.03 in 1200 ms; the locator dot in the caption pulses once. `scale` is the
+ * individual property, so it composes with the `transform` GSAP writes for the parallax and the
+ * clip reveal instead of overwriting it. Pointer devices only. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  [data-figure] img {
+    transition: scale 1200ms var(--ease-out);
+  }
+
+  [data-figure]:hover img {
+    scale: 1.03;
+  }
+
+  [data-figure] [data-place] {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  [data-figure]:hover [data-place] {
+    animation: hoc-dot-pulse 600ms var(--ease-out) 1 both;
+  }
+}
+
+/* One beat: the dot swells to 1.9× and settles. Tune the peak at 45 %. */
+@keyframes hoc-dot-pulse {
+  0% {
+    scale: 1;
+  }
+  45% {
+    scale: 1.9;
+  }
+  100% {
+    scale: 1;
+  }
+}
+
+/* ───────────── District scene navigation: the current name draws its line ─────────────
+ * `link-reveal` draws for aria-current="page"; the scene marks the active district with "true". */
+[data-scene-link][aria-current='true'] {
+  background-position: 0 100%;
+  background-size: 100% 1px;
 }
 
 /* ───────────── District scene, pinned layout (district-scene.tsx) ─────────────
@@ -94,7 +148,11 @@
   }
 }
 
-/* ───────────── Home hero entry (only with html[data-hero-intro], see boot.ts) ─────────────
+/* ───────────── Hero entry (only with html[data-hero-intro]) ─────────────
+ * Set before first paint by boot.ts on a direct entry to any page with a hero, and again by
+ * transition-provider.tsx when the curtain lifts on a new page, so the arrival flows into the
+ * same entry instead of dropping a finished page. The rules are generic: every hero has
+ * [data-hero-title]; the home hero also has the panorama and the print, /services/deal the print.
  * Pure CSS, so it starts with the first frame and runs off the main thread while React hydrates.
  * Uses the individual `translate` / `scale` properties and `clip-path`, never `transform`, so the
  * desktop scroll scrub (GSAP, `transform`) composes with it instead of fighting it.
@@ -144,6 +202,41 @@
 
   html[data-hero-intro] :is([data-hero-print] [data-figure-media], [data-hero-print]:not(:has([data-figure-media]))) {
     animation: hoc-hero-print 1200ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both;
+  }
+}
+
+/* ───────────── Hero focus (edition 2): the title settles its width ─────────────
+ * Noto Serif Display's `wdth` axis runs 100 → 62.5 over 1400 ms while the lines rise: the title
+ * arrives wide and soft and focuses into the narrow D1 cut, like a lens. Only from 1024 px, where
+ * the lines are single `nowrap` lines (above): the text's start position never moves, so nothing
+ * reflows and nothing counts as a layout shift. The second animation is listed with the first so
+ * the per-line delays below keep both (the focus starts at 0 for every line).
+ * Tune: the `from` value in `hoc-hero-focus` (100 = full width; 85 is a quieter take). */
+@media (prefers-reduced-motion: no-preference) and (min-width: 64rem) {
+  html[data-hero-intro] [data-hero-title] > * {
+    animation:
+      hoc-hero-line 900ms cubic-bezier(0.16, 1, 0.3, 1) 100ms both,
+      hoc-hero-focus 1400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  html[data-hero-intro] [data-hero-title] > :nth-child(2) {
+    animation-delay: 200ms, 0ms;
+  }
+
+  html[data-hero-intro] [data-hero-title] > :nth-child(n + 3) {
+    animation-delay: 300ms, 0ms;
+  }
+}
+
+@keyframes hoc-hero-focus {
+  /* 85, not the full 100: at 100 «в Таиланде» and «Сопровождение» run past the right edge of a
+   * 1440 px viewport while they are still rising, and the wide cut reads as a different typeface
+   * rather than the same one settling. */
+  from {
+    font-variation-settings: 'wdth' 85;
+  }
+  to {
+    font-variation-settings: 'wdth' 62.5;
   }
 }
 

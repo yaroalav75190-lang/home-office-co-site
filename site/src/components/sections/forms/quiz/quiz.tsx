@@ -355,7 +355,7 @@ export function Quiz({ prefill, art }: { prefill: QuizPrefill; art: QuizArt }) {
               </div>
             </div>
 
-            <div ref={stepRef} key={state.step}>
+            <div ref={stepRef} key={state.step} data-quiz-step="">
               {state.step === 'contact' ? (
                 <ContactStep
                   state={state}
@@ -441,11 +441,11 @@ function QuestionStepView({
       onPointerDown={() => onArrow(false)}
     >
       <legend className="mb-8 block w-full">
-        <h2 ref={headingRef} tabIndex={-1} className="type-d3 max-w-[24ch]">
+        <h2 ref={headingRef} tabIndex={-1} data-reveal="lines" className="type-d3 max-w-[24ch]">
           {q.title}
         </h2>
       </legend>
-      <div className="grid gap-2 md:grid-cols-2">
+      <div data-reveal="items" className="grid gap-2 md:grid-cols-2">
         {q.options.map((option) => (
           <ChoiceTile
             key={option.id}
@@ -586,7 +586,7 @@ function ContactStep({
   return (
     <form ref={formRef} method="post" noValidate onSubmit={onSubmit} className="ym-disable-keys relative" aria-busy={busy || undefined}>
       <Honeypot />
-      <h2 ref={headingRef} tabIndex={-1} className="type-d3">
+      <h2 ref={headingRef} tabIndex={-1} data-reveal="lines" className="type-d3">
         Куда прислать подборку?
       </h2>
 
@@ -672,7 +672,9 @@ function QuizThanks({
     { lead: 'Дальше в вашем темпе.', text: 'Если захотите, брокер разберёт подборку с вами за 20 минут по телефону или видео' },
   ]
   return (
-    <div className="mt-2" role="status">
+    // `data-quiz-done` / `data-reveal="items"`: the lines rise in turn and the column's coast draws
+    // again (motion late-nodes). Items, not SplitText lines: a live region must keep its text nodes.
+    <div className="mt-2" role="status" data-quiz-done="" data-reveal="items">
       {/* The result has no URL of its own; noindex in case a crawler ever renders it (seo-brief §6.5). */}
       <meta name="robots" content="noindex, nofollow" />
       <h2 ref={doneRef} tabIndex={-1} className="type-d2">

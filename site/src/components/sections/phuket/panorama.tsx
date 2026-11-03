@@ -16,9 +16,10 @@ type PanoramaProps<K extends PhotoKey> = {
 
 /**
  * Photo «в край» (100vw) with its caption kept on the grid, under the photo.
- * Motion hook: `data-parallax` on the wrapper (BUILD_PLAN «Хуки моушна», art-direction §5). The
+ * Motion hooks: `data-parallax` on the wrapper (BUILD_PLAN «Хуки моушна», art-direction §5). The
  * image keeps its own box: the motion layer scales it 1.12 for the slack it needs to drift
- * −6 % → 6 % (motion-root `parallax`), so the page must not make it taller as well.
+ * −6 % → 6 % (motion `parallax`), so the page must not make it taller as well. `data-reveal="clip"`:
+ * the photo opens from the bottom as it enters (on arrival through the curtain, as the panel lifts).
  */
 export function Panorama<K extends PhotoKey>({
   photo,
@@ -30,7 +31,7 @@ export function Panorama<K extends PhotoKey>({
   className,
 }: PanoramaProps<K>) {
   return (
-    <div data-parallax="" className={clsx('col-span-full', className)}>
+    <div data-parallax="" data-reveal="clip" className={clsx('col-span-full', className)}>
       <Figure
         photo={photo}
         ratio={ratio}

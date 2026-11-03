@@ -37,7 +37,10 @@ export function GeoHero({ crumbs, titleLines, lead, cta, art, panorama }: GeoHer
     >
       <Breadcrumbs items={crumbs} className="mb-12" />
 
-      <div className="col-span-full grid grid-cols-subgrid">
+      {/* From 1024 px the grid, not the drawing's cell, is the containing block of the drawing (see
+          the cell below): Chrome collapses a row-spanning cell whose only child is absolute to 0 px
+          for the length of the panorama's clip reveal, which made the island vanish (CLS 0.024). */}
+      <div className="col-span-full grid grid-cols-subgrid lg:relative">
         <h1 id="hero-title" data-hero-title="" className="type-d1 col-span-full lg:row-start-1">
           <span className="block">{typo(titleLines[0])}</span>{' '}
           <span className="block">{typo(titleLines[1])}</span>
@@ -53,7 +56,7 @@ export function GeoHero({ crumbs, titleLines, lead, cta, art, panorama }: GeoHer
 
         {/* From 1024 px the drawing spans both rows; it is absolutely sized inside, so it never
             makes the rows taller than the h1 and the Lead block need. */}
-        <div className="relative col-span-full mt-14 md:col-span-3 md:col-start-6 md:mt-10 lg:col-span-4 lg:col-start-9 lg:row-span-2 lg:row-start-1 lg:mt-0">
+        <div className="relative col-span-full mt-14 md:col-span-3 md:col-start-6 md:mt-10 lg:static lg:col-span-4 lg:col-start-9 lg:row-span-2 lg:row-start-1 lg:mt-0">
           {art}
         </div>
       </div>

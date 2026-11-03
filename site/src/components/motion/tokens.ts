@@ -47,13 +47,14 @@ export const ease = {
   line: cubicBezier(0.45, 0, 0.2, 1),
 }
 
-/** Durations, seconds (§5): 320 UI, 480–600 buttons/menu, 900 lines, 1400 photos, 1800 line. */
+/** Durations, seconds (§5): 320 UI, 480–600 buttons/menu, 900 lines, 1200 small locators, 1400 photos, 1800 line. */
 export const dur = {
   ui: 0.32,
   segment: 0.4,
   swap: 0.6,
   text: 0.8,
   lines: 0.9,
+  locator: 1.2,
   photo: 1.4,
   coast: 1.8,
 }

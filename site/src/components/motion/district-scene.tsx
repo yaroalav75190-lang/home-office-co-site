@@ -183,7 +183,8 @@ function DistrictPanel({ district: d }: { district: DistrictSceneItem }) {
             ) : null}
           </div>
 
-          <div className="md:self-start">
+          {/* Stacked layouts: the photo opens on enter (MotionRoot); the pinned scene wipes it in itself. */}
+          <div data-reveal="clip" className="md:self-start">
             {d.photo ? (
               <Figure
                 photo={d.photo}

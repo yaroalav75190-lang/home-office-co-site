@@ -44,7 +44,8 @@ export type FigureProps<K extends PhotoKey> = {
  * Photo with the caption UNDER it (text never sits on a photo, art-direction §3.6):
  * Small, ink-muted, «Место, побережье», with an optional locator.
  * The media box keeps the ratio before the image loads (no CLS) and is marked `data-figure-media`
- * for reveal animations.
+ * for reveal animations; the figure itself is marked `data-figure` for the hover (image 1.03,
+ * locator dot pulse; motion.css «Figures alive on hover»).
  */
 export function Figure<K extends PhotoKey>({
   photo,
@@ -105,7 +106,7 @@ export function Figure<K extends PhotoKey>({
   }
 
   return (
-    <figure className={className}>
+    <figure data-figure="" className={className}>
       <div
         data-figure-media=""
         className={clsx(
