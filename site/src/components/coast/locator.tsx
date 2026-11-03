@@ -32,8 +32,10 @@ export type LocatorProps = Omit<
 const DOT_PX: Record<LocatorSize, number> = { 24: 2.5, 64: 3.5, 96: 4, 120: 4.5, 160: 5 };
 
 /**
- * Small static coast silhouette with a dot (place) and/or a district segment.
- * Server-safe, no client JS. Locators are never animated (art direction §5).
+ * Small coast silhouette with a dot (place) and/or a district segment.
+ * Server-safe, no client JS. The paths carry the same hooks as <Coast> (`pathLength="1"`,
+ * `data-coast-path`, `data-district`, `data-place`), so the motion layer draws a locator on
+ * enter the way it draws a coast (art direction §5, edition 2); without JS it is simply there.
  */
 export function Locator({
   place,
@@ -83,12 +85,13 @@ export function Locator({
       {label ? <title>{label}</title> : null}
       <g className={segment ? baseClassName : undefined}>
         {lod.d.map((d, i) => (
-          <path key={i} d={d} vectorEffect="non-scaling-stroke" />
+          <path key={i} d={d} pathLength={1} vectorEffect="non-scaling-stroke" data-coast-path="" />
         ))}
       </g>
       {segment ? (
         <path
           d={segment}
+          pathLength={1}
           vectorEffect="non-scaling-stroke"
           strokeWidth={3}
           className={accentClassName}

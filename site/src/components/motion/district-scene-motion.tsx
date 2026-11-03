@@ -4,10 +4,16 @@
 //
 // ≥1024 px, motion allowed — pinned scene:
 //   the stage holds for 6 × 60svh; the island is drawn north → south with the scroll (the drawn
-//   length is mapped so the active district is always fully drawn); the active segment turns
-//   laterite and thickens 1.5 → 3 px in 400 ms; the district name switches through a 600 ms mask,
-//   the rest of the text cross-fades; the list of names mirrors and drives the scroll; when the
+//   length is mapped so each district's segment draws itself from the moment that district
+//   activates and is complete at the centre of its range, where the snap rests); the active
+//   segment turns laterite and thickens 1.5 → 3 px in 400 ms and the island breathes once
+//   (scale 1 → 1.015 → 1, 600 ms); the district name switches through a 600 ms mask, the text
+//   cross-fades, the photo wipes in from the left (clip 600 ms, image settling from 1.08) while
+//   the previous photo slides away to the right, the caption locator draws; the list of names
+//   mirrors and drives the scroll and the current name draws its underline (motion.css); when the
 //   scroll stops inside the hold it settles on the nearest district (not on touch screens).
+//   The first district's photo wipes in as the stage enters. MotionRoot leaves the panels alone
+//   in this mode (their `data-reveal="clip"` hooks serve the stacked layouts).
 //   The layout (100svh stage, stacked panels, list, reserved scroll track, sticky hold) is CSS from
 //   the first paint (motion.css «District scene»): this code never changes geometry, it only
 //   scrubs paint, so hydration and ScrollTrigger refreshes cause no layout shift. No ScrollTrigger
@@ -20,12 +26,17 @@ import { type CSSProperties, type ReactNode, useRef } from 'react'
 import { setCoastDrawMode } from '@/components/coast/draw'
 import type { DistrictId } from '@/components/coast/types'
 import { gsap, ScrollTrigger, useGSAP } from '@/lib/gsap'
-import { drawCoast, segmentDrawMode, svgScale } from './coast-draw'
+import { drawCoast, drawLocator, segmentDrawMode, svgScale } from './coast-draw'
 import { scrollToY } from './lenis-ref'
 import { dur, ease, mq } from './tokens'
 
 /** Name mask travel; > 100% so the clip padding (0.12em) is cleared too. */
 const NAME_OFFSET = 125
+/** Photo wipe: hidden behind the right edge of its box (clip from the left). */
+const PHOTO_HIDDEN = 'inset(0% 100% 0% 0%)'
+/** How far the previous photo slides (px) while it fades; the island's breath amplitude. */
+const PHOTO_SLIDE = 24
+const BREATH = 1.015
 
 type Scene = {
   /** The scroll track (motion.css: 100svh + n × 60svh); the stage is sticky inside it. */
@@ -35,6 +46,8 @@ type Scene = {
   panels: HTMLElement[]
   names: HTMLElement[]
   bodies: HTMLElement[]
+  /** Photo box of each panel (null for a panel without a photo). */
+  photos: (HTMLElement | null)[]
   links: HTMLAnchorElement[]
   segments: SVGPathElement[]
 }
@@ -60,6 +73,7 @@ export function DistrictSceneMotion({ ids, children }: { ids: DistrictId[]; chil
         panels,
         names: panels.map((p) => p.querySelector<HTMLElement>('[data-scene-name]') ?? p),
         bodies: panels.map((p) => p.querySelector<HTMLElement>('[data-scene-body]') ?? p),
+        photos: panels.map((p) => p.querySelector<HTMLElement>('[data-figure-media]')),
         links: pick<HTMLAnchorElement>((id) => `[data-scene-link="${id}"]`),
         segments: pick<SVGPathElement>((id) => `[data-district="${id}"]`),
       }
@@ -85,11 +99,16 @@ export function DistrictSceneMotion({ ids, children }: { ids: DistrictId[]; chil
 /* ───────────────────────── Pinned scene (≥1024 px, motion) ───────────────────────── */
 
 function pinnedScene(s: Scene): () => void {
-  const { wrap, stage, svg, panels, names, bodies, links, segments } = s
+  const { wrap, stage, svg, panels, names, bodies, photos, links, segments } = s
   const n = panels.length
   const base = Array.from(svg.querySelectorAll<SVGPathElement>('[data-coast-path]'))
   const main = base[0]
   const segClass = segments.map((seg) => seg.getAttribute('class'))
+  const images = photos.map((box) => box?.querySelector<HTMLElement>('img') ?? null)
+  const locators = panels.map((p) => p.querySelector<SVGSVGElement>('figcaption svg[data-locator]'))
+  // The text column cross-fades; the photo column is left to the wipe (both sit in the body grid).
+  const texts = bodies.map((b) => (b.firstElementChild as HTMLElement | null) ?? b)
+  const drawCleanups: (() => void)[] = []
 
   const fr = districtFractions(main, segments)
   const width = segments.map(() => ({ px: 1.5 }))
@@ -116,6 +135,53 @@ function pinnedScene(s: Scene): () => void {
   })
   panels.forEach((p, i) => gsap.set(p, { opacity: i === 0 ? 1 : 0, pointerEvents: i === 0 ? 'auto' : 'none' }))
   names.forEach((el, i) => gsap.set(el, { yPercent: i === 0 ? 0 : NAME_OFFSET }))
+  // Every photo waits behind its left-edge clip; the locators wait for their panel.
+  photos.forEach((box) => box && gsap.set(box, { clipPath: PHOTO_HIDDEN }))
+  locators.forEach((svg) => svg && gsap.set(svg, { opacity: 0 }))
+
+  /** The photo of panel i wipes in from the left; the image settles from 1.08 with a 4 % pan. */
+  const wipeIn = (i: number, delay = 0) => {
+    const box = photos[i]
+    if (!box) return
+    gsap.killTweensOf(images[i] ? [box, images[i]] : box)
+    gsap.fromTo(
+      box,
+      { clipPath: PHOTO_HIDDEN, x: 0, opacity: 1 },
+      { clipPath: 'inset(0% 0% 0% 0%)', duration: dur.swap, delay, ease: ease.out, clearProps: 'clipPath' },
+    )
+    if (images[i]) {
+      gsap.fromTo(
+        images[i],
+        { scale: 1.08, xPercent: -4 },
+        { scale: 1, xPercent: 0, duration: dur.lines, delay, ease: ease.out, clearProps: 'transform' },
+      )
+    }
+    const loc = locators[i]
+    if (loc) drawCleanups.push(drawLocator(loc, { immediate: true }))
+  }
+
+  /** The photo of panel i slides to the right and fades, then waits behind its clip again. */
+  const slideAway = (i: number) => {
+    const box = photos[i]
+    if (!box) return
+    gsap.killTweensOf(images[i] ? [box, images[i]] : box)
+    gsap.to(box, {
+      x: PHOTO_SLIDE,
+      opacity: 0,
+      duration: dur.ui,
+      ease: ease.out,
+      onComplete: () => gsap.set(box, { x: 0, opacity: 1, clipPath: PHOTO_HIDDEN }),
+    })
+  }
+
+  /** The island takes one breath when a district activates. */
+  const breathe = () => {
+    gsap.fromTo(
+      svg,
+      { scale: 1 },
+      { scale: BREATH, duration: 0.3, ease: 'sine.inOut', yoyo: true, repeat: 1, overwrite: true, transformOrigin: '50% 50%' },
+    )
+  }
 
   let active = -1
 
@@ -138,36 +204,48 @@ function pinnedScene(s: Scene): () => void {
     gsap.to(width[next], { px: 3, duration: dur.segment, ease: ease.out, overwrite: true, onUpdate: () => applyWidth(next) })
 
     if (prev < 0) return
+    breathe()
 
-    // Panels: name through the mask (600 ms), text cross-fade. Others snap to hidden (fast scroll).
+    // Panels: name through the mask (600 ms), text cross-fade, photo wipe. Others snap to hidden (fast scroll).
     panels.forEach((p, i) => {
       if (i === prev || i === next) return
-      gsap.killTweensOf([p, names[i], bodies[i]])
+      gsap.killTweensOf([p, names[i], texts[i], photos[i], images[i]].filter((el) => el !== null))
       gsap.set(p, { opacity: 0, pointerEvents: 'none' })
       gsap.set(names[i], { yPercent: NAME_OFFSET })
+      if (photos[i]) gsap.set(photos[i], { x: 0, opacity: 1, clipPath: PHOTO_HIDDEN })
     })
-    gsap.killTweensOf([panels[prev], names[prev], bodies[prev], panels[next], names[next], bodies[next]])
+    gsap.killTweensOf([panels[prev], names[prev], texts[prev], panels[next], names[next], texts[next]])
 
     gsap.set(panels[prev], { pointerEvents: 'none', zIndex: 0 })
     gsap.to(names[prev], { yPercent: -NAME_OFFSET * dir, duration: dur.swap, ease: ease.inOut })
-    gsap.to(bodies[prev], {
+    gsap.to(texts[prev], {
       opacity: 0,
       duration: dur.ui,
       ease: ease.out,
       onComplete: () => {
         gsap.set(panels[prev], { opacity: 0 })
-        gsap.set(bodies[prev], { opacity: 1 })
+        gsap.set(texts[prev], { opacity: 1 })
       },
     })
+    slideAway(prev)
 
     gsap.set(panels[next], { opacity: 1, pointerEvents: 'auto', zIndex: 1 })
     gsap.fromTo(names[next], { yPercent: NAME_OFFSET * dir }, { yPercent: 0, duration: dur.swap, delay: 0.08, ease: ease.out })
-    gsap.fromTo(bodies[next], { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, delay: 0.16, ease: ease.out, clearProps: 'transform' })
+    gsap.fromTo(texts[next], { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, delay: 0.16, ease: ease.out, clearProps: 'transform' })
+    wipeIn(next, 0.12)
   }
 
-  // Drawn share of the main path for a hold progress p: knots at the centre of each district's
-  // scroll range, where that district's segment is complete; the whole island at the end.
-  const knots: [number, number][] = [[0, fr[0].start], ...fr.map((f, i): [number, number] => [(i + 0.5) / n, f.end]), [1, 1]]
+  // Drawn share of the main path for a hold progress p. Knots: when district i activates (p = i/n)
+  // the line has reached the start of its segment, at the centre of its range (where the snap
+  // rests) the segment is complete; the stretch to the next district is drawn in the second half.
+  // The whole island at the end.
+  const knots: [number, number][] = [
+    ...fr.flatMap((f, i): [number, number][] => [
+      [i / n, f.start],
+      [(i + 0.5) / n, f.end],
+    ]),
+    [1, 1],
+  ]
   const drawnAt = (p: number) => {
     for (let k = 1; k < knots.length; k++) {
       const [p1, f1] = knots[k]
@@ -208,6 +286,17 @@ function pinnedScene(s: Scene): () => void {
     onRefresh: () => {
       enterDrawMode()
       render()
+    },
+  })
+
+  // The first district's photo wipes in as the stage reaches the viewport (the others wipe in
+  // when their district activates).
+  const first = ScrollTrigger.create({
+    trigger: stage,
+    start: 'top 85%',
+    once: true,
+    onEnter: () => {
+      if (active === 0) wipeIn(0)
     },
   })
 
@@ -257,11 +346,15 @@ function pinnedScene(s: Scene): () => void {
     })
     approach?.kill()
     track?.kill()
+    first.kill()
+    drawCleanups.forEach((fn) => fn())
     // Tweens started from scroll callbacks are outside the GSAP context: clear them by hand
     // (these nodes carry no inline styles from React).
-    const touched = [...panels, ...names, ...bodies]
-    gsap.killTweensOf([...touched, ...segments, ...width])
+    const media = [...photos, ...images, ...locators].filter((el): el is HTMLElement | SVGSVGElement => el !== null)
+    const touched = [...panels, ...names, ...bodies, ...texts, ...media]
+    gsap.killTweensOf([...touched, ...segments, ...width, svg])
     gsap.set(touched, { clearProps: 'all' })
+    gsap.set(svg, { clearProps: 'transform' })
     setCoastDrawMode(svg, false)
     segmentDrawMode(svg, segments, false)
     base.forEach((p) => {

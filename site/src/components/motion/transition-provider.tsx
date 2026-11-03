@@ -7,7 +7,10 @@
 //                  for geographic pages, a coast drawing itself in 600 ms
 //   router.push    after the leave (Isle Thorne loading-curtain order)
 //   hold ≥ 350 ms  and until the new route is committed
-//   enter 700 ms   panel leaves upwards (expo.out), new page y 60 → 0
+//   enter 700 ms   panel leaves upwards (expo.out), new page y 60 → 0; the new hero plays its CSS
+//                  entry at the same time (title lines rise out of their masks, the panorama and
+//                  the print open, motion.css «Hero entry»), and MotionRoot starts the first
+//                  screen's reveals (the geo panorama clip, the island drawing) as the panel lifts
 //
 // Lenis is stopped for the whole transition and the page is put at the top (or at its #anchor)
 // before the panel lifts. Started only by <TransitionLink>; reduced motion, anchors, external
@@ -18,7 +21,7 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { setCoastDrawMode } from '@/components/coast/draw'
 import { gsap, ScrollTrigger } from '@/lib/gsap'
-import { HERO_INTRO_ATTR } from './boot'
+import { HERO_ENTRY_MS, HERO_INTRO_ATTR } from './boot'
 import { segmentDrawMode } from './coast-draw'
 import { type CurtainArtKey, curtainFor } from './curtain-routes'
 import { getLenis } from './lenis-ref'
@@ -48,6 +51,24 @@ export type TransitionProviderProps = {
 }
 
 const wait = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms))
+
+let heroEntryTimer = 0
+
+/**
+ * Replay the CSS hero entry on the page that just arrived (motion.css «Hero entry»): the same
+ * keyframes as a direct load, started as the curtain begins to lift. The attribute value marks
+ * it as ours, so boot.ts' safety net leaves it alone; it is removed after the longest entry.
+ */
+function playHeroEntry(main: HTMLElement) {
+  const html = document.documentElement
+  window.clearTimeout(heroEntryTimer)
+  html.removeAttribute(HERO_INTRO_ATTR)
+  if (!main.querySelector('[data-hero-title]')) return
+  html.setAttribute(HERO_INTRO_ATTR, 'enter')
+  heroEntryTimer = window.setTimeout(() => {
+    if (html.getAttribute(HERO_INTRO_ATTR) === 'enter') html.removeAttribute(HERO_INTRO_ATTR)
+  }, HERO_ENTRY_MS)
+}
 
 export function TransitionProvider({ art, children }: TransitionProviderProps) {
   const router = useRouter()
@@ -83,6 +104,7 @@ export function TransitionProvider({ art, children }: TransitionProviderProps) {
         return
       }
       setTransitionBusy(true)
+      window.clearTimeout(heroEntryTimer)
       document.documentElement.removeAttribute(HERO_INTRO_ATTR)
 
       const target = new URL(href, window.location.href)
@@ -147,6 +169,7 @@ export function TransitionProvider({ art, children }: TransitionProviderProps) {
       else window.scrollTo(0, 0)
 
       gsap.set(main, { y: 60, opacity: 1 })
+      playHeroEntry(main)
       releaseEnter()
       const enter = gsap.timeline()
       enter.to(el, { clipPath: 'inset(0% 0% 100% 0%)', duration: ENTER, ease: ease.out }, 0)
