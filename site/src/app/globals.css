@@ -1,0 +1,569 @@
+@import "tailwindcss";
+
+/*
+ * Home Office & Co design tokens. Source: docs/design/art-direction.md §3.
+ * Default Tailwind palettes, radii, shadows and blurs are removed on purpose:
+ * only the tokens below exist, so `bg-zinc-100`, `rounded-lg` or `shadow` do not compile.
+ */
+
+@theme {
+  /* §3.1 Colour */
+  --color-*: initial;
+  --color-salt: #f3f3ef;
+  --color-sand: #e5e6e0;
+  --color-ink: #10262b;
+  --color-ink-muted: #4d5e61;
+  --color-laterite: #a34328;
+  --color-laterite-on-ink: #e08a62;
+  --color-shallows: #cfe0dd;
+  --color-on-ink-muted: #a9b7b6;
+  --color-error: #a1182e;
+  --color-success: #2e6a4f;
+  /* §4 Buttons: the layer that rises from the bottom on hover. */
+  --color-ink-raised: #1e3d44;
+
+  /* §3.2 Fonts (CSS variables come from next/font in app/layout.tsx) */
+  --font-*: initial;
+
+  /* §3.5 Radius 0, no shadows, no blur */
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --blur-*: initial;
+
+  /* §3.4 Breakpoints */
+  --breakpoint-*: initial;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --breakpoint-2xl: 100rem;
+
+  /* §5 Motion easings */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-line: cubic-bezier(0.45, 0, 0.2, 1);
+
+  /* §3.3 Type steps (size + line-height + tracking + weight). Use the `type-*` utilities below,
+     they also set the family and the wdth axis. */
+  --text-*: initial;
+  --text-d1: clamp(2.75rem, 0.714rem + 11.43vw, 11rem);
+  --text-d1--line-height: 0.92;
+  --text-d1--letter-spacing: -0.03em;
+  --text-d1--font-weight: 300;
+  --text-d2: clamp(2.5rem, 1.2rem + 5.33vw, 6rem);
+  --text-d2--line-height: 0.98;
+  --text-d2--letter-spacing: -0.02em;
+  --text-d2--font-weight: 300;
+  --text-d3: clamp(1.625rem, 1.393rem + 0.952vw, 2.25rem);
+  --text-d3--line-height: 1.15;
+  --text-d3--letter-spacing: -0.01em;
+  --text-d3--font-weight: 400;
+  --text-lead: clamp(1.1875rem, 1.118rem + 0.286vw, 1.375rem);
+  --text-lead--line-height: 1.45;
+  --text-lead--letter-spacing: -0.005em;
+  --text-lead--font-weight: 400;
+  --text-body: clamp(1.0625rem, 1.039rem + 0.095vw, 1.125rem);
+  --text-body--line-height: 1.6;
+  --text-body--letter-spacing: 0em;
+  --text-body--font-weight: 400;
+  --text-ui: 1rem;
+  --text-ui--line-height: 1.25;
+  --text-ui--letter-spacing: 0.005em;
+  --text-ui--font-weight: 500;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.4;
+  --text-small--letter-spacing: 0.01em;
+  --text-small--font-weight: 400;
+
+  /* §3.5 Spacing. The default 4 px scale covers 4…240 (1…60). Named steps: */
+  --spacing-section: clamp(6rem, 3.586rem + 9.905vw, 12.5rem); /* between sections, 96→200 */
+  --spacing-heading: clamp(3rem, 2.4rem + 3vw, 6rem); /* heading → content, 48→96 */
+  --spacing-header: var(--header-h); /* 64 / 88 */
+  --spacing-margin: var(--grid-margin); /* grid side margin, for bleeds: -ml-margin */
+  --spacing-gutter: var(--grid-gutter); /* grid column gap */
+
+  /* §3.4 Grid max width */
+  --container-site: 100rem;
+}
+
+@theme inline {
+  --font-display: var(--font-noto-serif-display), "Noto Serif Display", Georgia, serif;
+  --font-sans: var(--font-onest), "Onest", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Elements on an ink field: `on-ink:text-salt`. Set by `data-surface="ink"` on a section. */
+@custom-variant on-ink (&:where([data-surface="ink"], [data-surface="ink"] *));
+
+/* ───────────────────────── Type steps (§3.3) ───────────────────────── */
+
+@utility type-d1 {
+  font-family: var(--font-display);
+  font-size: var(--text-d1);
+  line-height: var(--text-d1--line-height);
+  letter-spacing: var(--text-d1--letter-spacing);
+  font-weight: var(--text-d1--font-weight);
+  font-variation-settings: "wdth" 62.5;
+  overflow-wrap: break-word;
+}
+
+@utility type-d2 {
+  font-family: var(--font-display);
+  font-size: var(--text-d2);
+  line-height: var(--text-d2--line-height);
+  letter-spacing: var(--text-d2--letter-spacing);
+  font-weight: var(--text-d2--font-weight);
+  font-variation-settings: "wdth" 70;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+/* Phones under 368 px only (WCAG 1.4.10 at 320 px; 390 px stays untouched): hyphenate
+   «Сопровождение», «Недвижимость» instead of cutting them. Wider screens never hyphenate display type. */
+@media (width < 23rem) {
+  .type-d1,
+  .type-d2 {
+    hyphens: auto;
+  }
+}
+
+@utility type-d3 {
+  font-family: var(--font-display);
+  font-size: var(--text-d3);
+  line-height: var(--text-d3--line-height);
+  letter-spacing: var(--text-d3--letter-spacing);
+  font-weight: var(--text-d3--font-weight);
+  font-variation-settings: "wdth" 87.5;
+  text-wrap: balance;
+}
+
+@utility type-lead {
+  font-family: var(--font-sans);
+  font-size: var(--text-lead);
+  line-height: var(--text-lead--line-height);
+  letter-spacing: var(--text-lead--letter-spacing);
+  font-weight: var(--text-lead--font-weight);
+  font-variation-settings: normal;
+  text-wrap: pretty;
+}
+
+@utility type-body {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  letter-spacing: var(--text-body--letter-spacing);
+  font-weight: var(--text-body--font-weight);
+  font-variation-settings: normal;
+  text-wrap: pretty;
+}
+
+@utility type-ui {
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  line-height: var(--text-ui--line-height);
+  letter-spacing: var(--text-ui--letter-spacing);
+  font-weight: var(--text-ui--font-weight);
+  font-variation-settings: normal;
+}
+
+@utility type-small {
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  line-height: var(--text-small--line-height);
+  letter-spacing: var(--text-small--letter-spacing);
+  font-weight: var(--text-small--font-weight);
+  font-variation-settings: normal;
+}
+
+/* Figures: tabular lining numerals everywhere numbers sit (time, stats, phone). */
+@utility nums {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* ───────────────────────── Grid (§3.4) ───────────────────────── */
+
+/* 4 / 8 / 12 columns, margins and gutters per breakpoint, max 1600 px including margins.
+   Text left edges sit on columns 1, 5, 9. Nest with `col-span-full grid grid-cols-subgrid`. */
+@utility grid-site {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  width: 100%;
+  max-width: var(--container-site);
+  margin-inline: auto;
+  padding-inline-start: calc(var(--grid-margin) + env(safe-area-inset-left, 0px));
+  padding-inline-end: calc(var(--grid-margin) + env(safe-area-inset-right, 0px));
+}
+
+/* Edge-to-edge (100vw) element from inside the grid; body clips horizontal overflow. */
+@utility full-bleed {
+  width: 100vw;
+  max-width: none;
+  margin-inline: calc(50% - 50vw);
+}
+
+/* Section rhythm: `py-section`, `mt-heading` also work through the spacing tokens. */
+@utility section-y {
+  padding-block: var(--spacing-section);
+}
+
+/* ───────────────────────── Links (§4) ───────────────────────── */
+
+/* Always underlined; on hover the line leaves to the right and redraws from the left, 320 ms. */
+@utility link-underline {
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 1px;
+  padding-bottom: 0.125em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    &:hover {
+      animation: hoc-link-redraw 320ms var(--ease-in-out);
+    }
+  }
+}
+
+/* No line at rest; drawn from the left on hover, kept for the current page or an open panel.
+   Put it on the link itself, or on a <span> inside a link whose box is larger than the text
+   (44 px targets): the parent's hover and aria-current also draw the line. */
+@utility link-reveal {
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 100% 100%;
+  background-size: 0 1px;
+  padding-bottom: 0.125em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-size 320ms var(--ease-in-out);
+
+  &[aria-current="page"],
+  &[aria-expanded="true"],
+  [aria-current="page"] > &,
+  [aria-expanded="true"] > & {
+    background-position: 0 100%;
+    background-size: 100% 1px;
+  }
+
+  @media (hover: hover) {
+    &:hover,
+    :hover > & {
+      background-position: 0 100%;
+      background-size: 100% 1px;
+    }
+  }
+}
+
+@keyframes hoc-link-redraw {
+  0% {
+    background-position: 100% 100%;
+    background-size: 100% 1px;
+  }
+  50% {
+    background-position: 100% 100%;
+    background-size: 0 1px;
+  }
+  50.01% {
+    background-position: 0 100%;
+    background-size: 0 1px;
+  }
+  100% {
+    background-position: 0 100%;
+    background-size: 100% 1px;
+  }
+}
+
+/* ───────────────────────── Navigation (§4) ───────────────────────── */
+
+/* Header navigation separated by commas set in CSS (Isle Thorne Header.astro); hidden from screen readers. */
+@utility list-commas {
+  & > li:not(:last-child)::after {
+    content: ",";
+    content: "," / "";
+  }
+}
+
+/* Menu panels: clip `inset(0 0 100% 0)` → `inset(0)` in 600 ms; children marked `data-stagger`
+   rise 24 px in 40 ms steps (`--i` = index). Toggle with `data-open="true"`. */
+@utility clip-panel {
+  visibility: hidden;
+  clip-path: inset(0 0 100% 0);
+  transition:
+    clip-path 400ms var(--ease-in-out),
+    visibility 0s linear 400ms;
+
+  &[data-open="true"] {
+    visibility: visible;
+    clip-path: inset(0);
+    transition:
+      clip-path 600ms var(--ease-out),
+      visibility 0s linear 0s;
+
+    /* For elements that appear and open in the same frame (a <dialog> after showModal). */
+    @starting-style {
+      clip-path: inset(0 0 100% 0);
+    }
+  }
+
+  & [data-stagger] {
+    opacity: 0;
+    translate: 0 24px;
+    transition:
+      opacity 320ms var(--ease-out),
+      translate 600ms var(--ease-out);
+  }
+
+  &[data-open="true"] [data-stagger] {
+    opacity: 1;
+    translate: 0 0;
+    transition-delay: calc(var(--i, 0) * 40ms + 120ms);
+
+    @starting-style {
+      opacity: 0;
+      translate: 0 24px;
+    }
+  }
+}
+
+/* ───────────────────────── Disclosure (FAQ, §4) ───────────────────────── */
+
+/* Animated <details> open, 320 ms. Browsers without ::details-content open instantly. */
+@utility details-animate {
+  interpolate-size: allow-keywords;
+
+  &::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    transition:
+      block-size 320ms var(--ease-out),
+      content-visibility 320ms allow-discrete;
+  }
+
+  &[open]::details-content {
+    block-size: auto;
+  }
+}
+
+/* ───────────────────────── Forms (§4) ───────────────────────── */
+
+/* Text input / select / textarea: 56 px, underline 1 px ink-muted, focus 2 px ink, error 2 px.
+   The line is a background, so its thickness changes without moving anything.
+   Width and padding are left to utilities at the call site (preflight already zeroes padding,
+   border, radius and background). */
+@utility field-control {
+  --field-line: var(--color-ink-muted);
+  --field-line-width: 1px;
+  display: block;
+  min-height: 3.5rem;
+  background-image: linear-gradient(var(--field-line), var(--field-line));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% var(--field-line-width);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  appearance: none;
+  transition: background-size 160ms var(--ease-out);
+
+  [data-surface="ink"] & {
+    --field-line: var(--color-on-ink-muted);
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+    --field-line: var(--color-ink);
+    --field-line-width: 2px;
+  }
+
+  [data-surface="ink"] &:focus,
+  [data-surface="ink"] &:focus-visible {
+    --field-line: var(--color-salt);
+  }
+
+  &[aria-invalid="true"] {
+    --field-line: var(--color-error);
+    --field-line-width: 2px;
+  }
+
+  /* No on-ink error token in art-direction §3.1: on ink the error line is salt, with icon and text. */
+  [data-surface="ink"] &[aria-invalid="true"] {
+    --field-line: var(--color-salt);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    color: var(--color-ink-muted);
+  }
+}
+
+/* Tiles with a visually hidden input (choice, slot): ring on the tile when the input has keyboard focus. */
+@utility focus-ring-within {
+  &:has(:focus-visible) {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+
+@layer base {
+  :root {
+    --grid-columns: 4;
+    --grid-margin: 1rem;
+    --grid-gutter: 0.75rem;
+    --header-h: 4rem;
+    --focus-ring: var(--color-ink);
+
+    @media (width >= 48rem) {
+      --grid-columns: 8;
+      --grid-margin: 2rem;
+      --grid-gutter: 1rem;
+    }
+
+    @media (width >= 64rem) {
+      --grid-columns: 12;
+      --grid-margin: clamp(2rem, 3.33vw, 4rem);
+      --grid-gutter: clamp(1rem, 1.39vw, 1.5rem);
+      --header-h: 5.5rem;
+    }
+  }
+
+  html {
+    background-color: var(--color-salt);
+    color-scheme: light;
+    scroll-padding-top: var(--header-h);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-height: 100svh;
+    overflow-x: clip;
+    background-color: var(--color-salt);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Surfaces. `data-surface="ink"` also flips the header, focus ring and `on-ink:` variants. */
+  [data-surface="ink"] {
+    --focus-ring: var(--color-salt);
+    background-color: var(--color-ink);
+    color: var(--color-salt);
+  }
+
+  [data-surface="sand"] {
+    background-color: var(--color-sand);
+  }
+
+  ::selection {
+    background-color: var(--color-shallows);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  /* <main tabindex="-1"> receives focus from the skip link without a ring. */
+  [tabindex="-1"]:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  label[for],
+  select {
+    cursor: pointer;
+  }
+
+  ::placeholder {
+    color: var(--color-ink-muted);
+    opacity: 1;
+  }
+
+  /* Headings carry their look only through `type-*` utilities. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: inherit;
+  }
+
+  summary {
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Native modal <dialog> used by the menu: no UA backdrop tint. */
+  dialog::backdrop {
+    background: transparent;
+  }
+
+  /* Scroll lock while the menu is open (Lenis is stopped in JS as well). */
+  html[data-scroll-lock] {
+    overflow: hidden;
+  }
+}
+
+/* ───────────────────────── Animation hidden states (§5) ─────────────────────────
+ * Contract for the motion layer:
+ * 1. An inline script in <head> adds `js` to <html> before first paint (app/layout.tsx).
+ * 2. Elements marked `data-reveal` (fade, default) or `data-reveal="clip"` (photos) start hidden,
+ *    but only under `html.js` and only without reduced motion. Never mark the LCP element
+ *    (hero h1 / hero photo) with data-reveal.
+ * 3. When GSAP has set its own from-states it adds `motion-ready` to <html>; these rules then stop
+ *    matching and GSAP owns the elements.
+ * 4. If `motion-ready` never arrives (GSAP failed or is slow), everything is shown after 2.5 s.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html.js:not(.motion-ready) [data-reveal] {
+    opacity: 0;
+    animation: hoc-reveal-failsafe 1ms linear 2.5s both;
+  }
+
+  html.js:not(.motion-ready) [data-reveal="clip"] {
+    opacity: 1;
+    clip-path: inset(100% 0 0 0);
+  }
+}
+
+@keyframes hoc-reveal-failsafe {
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+    transform: none;
+  }
+}
+
+/* ───────────────────────── Reduced motion (§5) ───────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}

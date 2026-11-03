@@ -1,0 +1,16 @@
+# Python helpers (questionnaire decoding, review sheets)
+__pycache__/
+*.pyc
+
+# Node (site/.gitignore covers node_modules, .next and build output inside site/)
+node_modules/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# OS and editors
+.DS_Store
+Thumbs.db
+*.swp

@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "prototype-preview",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8765", "--bind", "127.0.0.1", "--directory", "C:/Users/l4783/AppData/Local/Temp/anketa_pages/www"],
+      "port": 8765
+    },
+    {
+      "name": "site-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["-C", "site", "exec", "next", "dev", "-p", "3001"],
+      "port": 3001
+    },
+    {
+      "name": "site-prod",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["-C", "site", "demo"],
+      "port": 3100
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+/*
+ * Motion layer CSS (art-direction §5). Imported once by motion-root.tsx.
+ * Same contract as the hidden states in app/globals.css: nothing is hidden without `html.js`,
+ * nothing moves under reduced motion, and the 2.5 s failsafe (`hoc-reveal-failsafe`, defined in
+ * globals.css) shows everything if GSAP never adds `motion-ready`.
+ */
+
+/* ───────────── Coast drawn on enter (`data-coast-draw`) ───────────── */
+@media (prefers-reduced-motion: no-preference) {
+  html.js:not(.motion-ready) [data-coast-draw] {
+    opacity: 0;
+    animation: hoc-reveal-failsafe 1ms linear 2.5s both;
+  }
+}
+
+/* ───────────── District scene, pinned layout (district-scene.tsx) ─────────────
+ * ≥1024 px with motion allowed the scene is a scroll track: one screen for the stage plus 60svh per
+ * district (art-direction §6, Home 4). This is the final layout from the first paint (`html.js` is
+ * set by the inline boot script; the media query is `mq.desktopMotion` in tokens.ts), so hydration
+ * never moves a box: the stage holds with `position: sticky` inside the reserved track and
+ * district-scene-motion.tsx only scrubs paint (stroke dashes, opacity, transforms).
+ * `--scene-n` (district count) is set inline on [data-scene-root].
+ * Reduced motion, < 1024 px and no JS keep the stacked layout from district-scene.tsx.
+ */
+@media (prefers-reduced-motion: no-preference) and (min-width: 64rem) {
+  html.js [data-scene-root] {
+    height: calc(100svh + var(--scene-n, 6) * 60svh);
+  }
+
+  html.js [data-scene-stage] {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    margin-top: 0;
+    padding-top: var(--header-h);
+    align-content: center;
+  }
+
+  html.js [data-scene-map] {
+    position: static;
+    align-self: center;
+  }
+
+  html.js [data-scene-map] > svg {
+    height: min(80svh, calc(100svh - var(--header-h) - 2rem));
+  }
+
+  html.js [data-scene-text] {
+    align-self: center;
+  }
+
+  /* All districts share one cell; the script cross-fades them. */
+  html.js [data-scene-panels] {
+    display: grid;
+  }
+
+  html.js [data-scene-panels] > * {
+    grid-area: 1 / 1;
+    margin-block: 0;
+  }
+
+  html.js [data-scene-nav] {
+    display: block;
+  }
+
+  /* The island on the left marks the district: no second, small island in the text column. */
+  html.js [data-scene-locator] {
+    display: none;
+  }
+
+  /* Before the scene script takes over (and if it never does): the first district only; the list
+   * still switches districts through :target. Opacity, so the text stays in the a11y tree. */
+  html.js:not(.motion-ready) [data-scene-panel]:not(:first-child) {
+    opacity: 0;
+  }
+
+  html.js:not(.motion-ready) [data-scene-panels]:has(> :target) > [data-scene-panel] {
+    opacity: 0;
+  }
+
+  html.js:not(.motion-ready) [data-scene-panels] > [data-scene-panel]:target {
+    opacity: 1;
+  }
+}
+
+/* ───────────── Home hero scrub, reserved scroll (motion-root.tsx `heroScrub`) ─────────────
+ * ≥1024 px with motion allowed the panorama holds for 70svh of scroll while it widens. That
+ * distance is reserved here from the first paint (the pin runs with `pinSpacing: false`), so
+ * creating the pin at hydration never pushes the next section down.
+ */
+@media (prefers-reduced-motion: no-preference) and (min-width: 64rem) {
+  html.js [data-hero]:has([data-hero-panorama]) {
+    padding-bottom: 70svh;
+  }
+}
+
+/* ───────────── Home hero entry (only with html[data-hero-intro], see boot.ts) ─────────────
+ * Pure CSS, so it starts with the first frame and runs off the main thread while React hydrates.
+ * Uses the individual `translate` / `scale` properties and `clip-path`, never `transform`, so the
+ * desktop scroll scrub (GSAP, `transform`) composes with it instead of fighting it.
+ *
+ *  0.00 s  panorama: clip inset(12% 0 0 0) → inset(0), image scale 1.08 → 1, 1400 ms
+ *  0.10 s  h1 line 1 rises out of its mask, 900 ms; 0.20 s line 2
+ *  0.15 s  print: clip from the bottom up, 1200 ms
+ *  lead, button and reply line are static (§5).
+ *
+ * h1 lines are the element children of [data-hero-title] (one block element per line). The mask
+ * is a clip-path on the line itself, moved against the translate so the window stays put:
+ * visible band = line box − 0.35em above (room for Й) and + 0.25em below (descenders у, р, д reach
+ * ≈ 0.22em past the box at line-height 0.92). The lower edge must stay inside the 3rem gap to the
+ * Lead (D1 ≤ 11rem → ≤ 2.75rem), or the rising letters cross the Lead text.
+ * The h1 is never at opacity 0 and keeps its layout box: the LCP text paints ~100 ms after FCP.
+ */
+/* One child = one line is also a layout contract: the fallback serif (no wdth 62.5 axis) is much
+ * wider than Noto Serif Display, so before the web font arrives the indented second line wrapped,
+ * the h1 grew by a line and everything under it jumped up 0.92 × D1 on the swap (CLS 0.057 on /
+ * with a 1.6 Mbit/s link). Stepped D1 titles are designed as single lines on desktop. */
+@media (min-width: 64rem) {
+  [data-hero-title] > * {
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-hero-intro] [data-hero-title] > * {
+    animation: hoc-hero-line 900ms cubic-bezier(0.16, 1, 0.3, 1) 100ms both;
+  }
+
+  html[data-hero-intro] [data-hero-title] > :nth-child(2) {
+    animation-delay: 200ms;
+  }
+
+  html[data-hero-intro] [data-hero-title] > :nth-child(n + 3) {
+    animation-delay: 300ms;
+  }
+
+  html[data-hero-intro] :is([data-hero-panorama] [data-figure-media], [data-hero-panorama]:not(:has([data-figure-media]))) {
+    animation: hoc-hero-pano 1400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  html[data-hero-intro] [data-hero-panorama] img {
+    animation: hoc-hero-scale 1400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  html[data-hero-intro] :is([data-hero-print] [data-figure-media], [data-hero-print]:not(:has([data-figure-media]))) {
+    animation: hoc-hero-print 1200ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both;
+  }
+}
+
+/* Bottom inset = translate − 0.25em at every frame (same easing), so the lower edge never moves. */
+@keyframes hoc-hero-line {
+  from {
+    translate: 0 calc(100% + 0.75em);
+    clip-path: inset(-0.35em -0.2em calc(100% + 0.5em) -0.2em);
+  }
+  to {
+    translate: 0 0;
+    clip-path: inset(-0.35em -0.2em -0.25em -0.2em);
+  }
+}
+
+@keyframes hoc-hero-pano {
+  from {
+    clip-path: inset(12% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes hoc-hero-scale {
+  from {
+    scale: 1.08;
+  }
+  to {
+    scale: 1;
+  }
+}
+
+@keyframes hoc-hero-print {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}

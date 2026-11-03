@@ -1,0 +1,701 @@
+<title>Home Office & Co</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Manrope:wght@400;500;600&display=swap">
+<style>
+/* Layout: editorial, full-bleed photography, 7/5 text-photo splits, thin rules instead of cards.
+   Palette: deep green ink, warm off-white, brass only for eyebrows and rules. Type: Prata display + Manrope text. */
+:root{
+  --bg:#F6F4EF; --surface:#FFFFFF; --surface-2:#ECE8DF;
+  --ink:#15302A; --ink-2:#0E1F1B; --muted:#5E6A66; --line:#D8D2C6;
+  --brass:#A3864C; --brass-soft:#E8DEC8;
+  --on-dark:#F3EFE6; --on-dark-muted:rgba(243,239,230,.72); --on-dark-line:rgba(243,239,230,.18);
+  --font-display:"Prata",Georgia,"Times New Roman",serif;
+  --font-body:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1C19; --surface:#152521; --surface-2:#1C2F2A;
+    --ink:#ECE8DE; --ink-2:#0A1513; --muted:#9FABA5; --line:#2A3F39;
+    --brass:#C9A96A; --brass-soft:#2C3A30; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1C19; --surface:#152521; --surface-2:#1C2F2A;
+  --ink:#ECE8DE; --ink-2:#0A1513; --muted:#9FABA5; --line:#2A3F39;
+  --brass:#C9A96A; --brass-soft:#2C3A30; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.65;margin:0;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--ink-2)}
+h1,h2,h3,h4{margin:0;font-family:var(--font-display);font-weight:400;text-wrap:balance;line-height:1.1}
+h1{font-size:clamp(2.5rem,5.6vw,4.3rem);letter-spacing:-.01em;line-height:1.05}
+h2{font-size:clamp(1.9rem,3.6vw,2.8rem)}
+h3{font-size:1.4rem;line-height:1.25}
+p{margin:0}
+a{color:inherit;text-decoration:none}
+ul{margin:0;padding:0;list-style:none}
+button{font:inherit;color:inherit}
+img{display:block;max-width:100%}
+:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.16em;color:var(--brass);font-weight:600}
+.lead{font-size:1.2rem;line-height:1.55;color:var(--muted);max-width:58ch}
+.muted{color:var(--muted)}
+.small{font-size:.9rem}
+.stack{display:grid;gap:14px}
+.band{padding-block:clamp(56px,9vw,120px)}
+.band.tight{padding-block:clamp(40px,6vw,72px)}
+.band.alt{background:var(--surface)}
+.head{display:grid;gap:14px;max-width:62ch;margin-bottom:clamp(32px,5vw,64px)}
+.split{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(28px,6vw,96px);align-items:start}
+.split.rev{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+@media (max-width:860px){.split,.split.rev{grid-template-columns:1fr}}
+.rule{border:0;border-top:1px solid var(--line);margin:0}
+.arrow{display:inline-flex;align-items:center;gap:10px;font-weight:500;border-bottom:1px solid currentColor;padding-bottom:2px}
+.arrow::after{content:"\2192"}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:16px 28px;border-radius:2px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);font-weight:500;font-size:.95rem;letter-spacing:.02em;cursor:pointer;text-decoration:none;white-space:nowrap;transition:opacity .2s ease}
+.btn:hover{opacity:.88}
+.btn.light{background:var(--on-dark);border-color:var(--on-dark);color:#0E1F1B}
+.btn.ghost{background:transparent;color:inherit;border-color:currentColor}
+.btn.ghost:hover{opacity:.7}
+.btn.sm{padding:11px 18px;font-size:.85rem}
+/* photo helpers */
+.photo{position:relative;overflow:hidden;border-radius:2px;background:var(--surface-2)}
+.photo img{width:100%;height:100%;object-fit:cover}
+.photo.r43{aspect-ratio:4/3}.photo.r32{aspect-ratio:3/2}.photo.r45{aspect-ratio:4/5}.photo.r169{aspect-ratio:16/9}
+.cap{font-size:.75rem;color:var(--muted);letter-spacing:.04em;margin-top:8px}
+.portrait{aspect-ratio:4/5;border-radius:2px;background:linear-gradient(160deg,var(--surface-2),var(--line));display:grid;place-items:center;font-family:var(--font-display);font-size:3rem;color:var(--muted)}
+/* header */
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--ink-2);color:var(--on-dark);border-bottom:1px solid var(--on-dark-line)}
+.hdr .wrap{display:flex;align-items:center;gap:20px;min-height:74px}
+.logo{display:flex;align-items:center;gap:12px;white-space:nowrap}
+.logo .mark{width:30px;height:30px;border:1px solid var(--on-dark);display:grid;place-items:center;font-family:var(--font-display);font-size:1rem;line-height:1}
+.logo .name{font-family:var(--font-display);font-size:1.1rem;letter-spacing:.02em}
+.nav{display:flex;align-items:center;gap:26px;margin-left:auto}
+.nav a{font-size:.74rem;text-transform:uppercase;letter-spacing:.14em;color:var(--on-dark-muted);padding:6px 0;border-bottom:1px solid transparent}
+.nav a:hover{color:var(--on-dark)}
+.nav a.active{color:var(--on-dark);border-bottom-color:var(--brass)}
+.lang{display:inline-flex;gap:10px;font-size:.74rem;letter-spacing:.12em;color:var(--on-dark-muted)}
+.lang button{border:0;background:none;padding:0;cursor:pointer;color:inherit;letter-spacing:inherit;font-size:inherit}
+.lang button.on{color:var(--on-dark)}
+.burger{display:none;margin-left:auto;border:1px solid var(--on-dark-line);background:transparent;width:44px;height:44px;cursor:pointer;align-items:center;justify-content:center;color:var(--on-dark)}
+.burger svg{width:22px;height:22px}
+.mnav{display:none;background:var(--ink-2);color:var(--on-dark);border-bottom:1px solid var(--on-dark-line)}
+.mnav .wrap{display:grid;padding-block:8px 18px}
+.mnav a{padding:14px 0;border-bottom:1px solid var(--on-dark-line);font-size:.8rem;text-transform:uppercase;letter-spacing:.14em}
+.mnav.open{display:block}
+@media (max-width:1000px){.nav{display:none}.burger{display:inline-flex}}
+/* hero */
+.hero{position:relative;min-height:clamp(560px,86vh,860px);display:flex;align-items:flex-end;color:var(--on-dark);background:var(--ink-2);overflow:hidden}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,21,19,.28) 0%,rgba(10,21,19,.12) 40%,rgba(10,21,19,.72) 100%)}
+.hero .wrap{position:relative;z-index:1;width:100%;padding-bottom:clamp(40px,6vw,72px);padding-top:120px;display:grid;gap:22px;animation:rise .9s ease both}
+.hero h1{max-width:17ch;color:var(--on-dark)}
+.hero .lead{color:var(--on-dark-muted);max-width:52ch;font-size:1.15rem}
+.hero .eyebrow{color:var(--brass-soft)}
+.hero-cta{display:flex;gap:26px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.hero-cta .arrow{font-size:.95rem;color:var(--on-dark)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stat{padding:30px 28px 30px 0;display:grid;gap:4px}
+.stat+.stat{padding-left:28px;border-left:1px solid var(--line)}
+.stat b{font-family:var(--font-display);font-weight:400;font-size:2.4rem;line-height:1}
+.stat span{color:var(--muted);font-size:.95rem}
+@media (max-width:700px){.stats{grid-template-columns:1fr}.stat+.stat{padding-left:0;border-left:0;border-top:1px solid var(--line)}.stat{padding:22px 0}}
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:220px;gap:12px}
+.tile{position:relative;overflow:hidden;border-radius:2px;color:var(--on-dark);background:var(--ink-2)}
+.tile img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s ease}
+.tile:hover img{transform:scale(1.04)}
+.tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,21,19,0) 40%,rgba(10,21,19,.78) 100%)}
+.tile .t{position:absolute;left:22px;right:22px;bottom:20px;z-index:1;display:grid;gap:4px}
+.tile .t h3{color:var(--on-dark);font-size:1.6rem}
+.tile .t span{font-size:.85rem;color:var(--on-dark-muted)}
+.tile.big{grid-column:span 2;grid-row:span 2}
+.tile.big .t h3{font-size:2.2rem}
+@media (max-width:900px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.tiles{grid-template-columns:1fr;grid-auto-rows:210px}.tile.big{grid-column:span 1;grid-row:span 1}}
+/* lists with rules */
+.lines>*{padding:22px 0;border-top:1px solid var(--line);display:grid;gap:6px}
+.lines>*:last-child{border-bottom:1px solid var(--line)}
+.lines h3{font-size:1.25rem}
+.lines.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 40px}
+@media (max-width:860px){.lines.cols3{grid-template-columns:1fr}.lines.cols3>*:last-child{border-bottom:1px solid var(--line)}}
+.projects.cols4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1000px){.projects.cols4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.projects.cols4{grid-template-columns:1fr}}
+.steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(28px,5vw,72px)}
+.steps>*{padding:26px 0;border-top:1px solid var(--line);display:grid;grid-template-columns:56px 1fr;gap:12px}
+.steps i{font-style:normal;font-family:var(--font-display);color:var(--brass);font-size:1.5rem;line-height:1.2}
+.steps h3{font-size:1.2rem;margin-bottom:6px}
+@media (max-width:760px){.steps{grid-template-columns:1fr}}
+/* quotes */
+.quotes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(24px,5vw,72px)}
+.quote{display:grid;gap:18px;padding-top:26px;border-top:1px solid var(--line)}
+.quote p.t{font-family:var(--font-display);font-size:1.35rem;line-height:1.4}
+.quote .who{font-size:.9rem;color:var(--muted)}
+@media (max-width:760px){.quotes{grid-template-columns:1fr}}
+/* projects */
+.projects{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(20px,3vw,40px)}
+.project{display:grid;gap:14px}
+.project .meta{display:grid;gap:4px;font-size:.9rem;color:var(--muted)}
+.project h3{font-size:1.3rem}
+@media (max-width:860px){.projects{grid-template-columns:1fr}}
+/* faq */
+.faq details{border-top:1px solid var(--line)}
+.faq details:last-child{border-bottom:1px solid var(--line)}
+.faq summary{cursor:pointer;padding:22px 0;list-style:none;display:flex;justify-content:space-between;gap:20px;align-items:baseline;font-family:var(--font-display);font-size:1.25rem}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--brass);font-size:1.5rem;line-height:1;flex:none}
+.faq details[open] summary::after{content:"\2013"}
+.faq .a{padding:0 0 24px;color:var(--muted);max-width:66ch}
+/* dark bands */
+.dark{background:var(--ink-2);color:var(--on-dark)}
+.dark .eyebrow{color:var(--brass-soft)}
+.dark .muted,.dark .lead{color:var(--on-dark-muted)}
+.dark .lines>*,.dark .quote,.dark .faq details,.dark .steps>*{border-color:var(--on-dark-line)}
+.photo-band{position:relative;overflow:hidden;color:var(--on-dark);background:var(--ink-2)}
+.photo-band>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55}
+.photo-band::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,21,19,.85),rgba(10,21,19,.35))}
+.photo-band .wrap{position:relative;z-index:1}
+.photo-band .credit{position:absolute;right:16px;bottom:10px;z-index:1;font-size:.7rem;color:var(--on-dark-muted);letter-spacing:.04em}
+/* journal */
+.journal>*{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:baseline;padding:22px 0;border-top:1px solid var(--line)}
+.journal>*:last-child{border-bottom:1px solid var(--line)}
+.journal h3{font-size:1.3rem}
+.journal .r{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--brass);font-weight:600}
+.journal .m{font-size:.85rem;color:var(--muted);white-space:nowrap}
+@media (max-width:560px){.journal>*{grid-template-columns:1fr}}
+/* forms */
+.form{display:grid;gap:22px}
+.field{display:grid;gap:8px}
+.field label,.field .lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:600}
+.field input,.field select,.field textarea{font:inherit;color:inherit;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:10px 0;width:100%;min-width:0}
+.field input:focus,.field select:focus{outline:none;border-bottom-color:var(--brass)}
+.field input::placeholder{color:var(--muted);opacity:.8}
+.dark .field input,.dark .field select{border-bottom-color:var(--on-dark-line);color:var(--on-dark)}
+.dark .field label,.dark .field .lbl{color:var(--on-dark-muted)}
+.row2{display:grid;gap:22px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.row3{display:grid;gap:22px;grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:640px){.row2,.row3{grid-template-columns:1fr}}
+.seg{display:flex;gap:22px;flex-wrap:wrap}
+.seg label{position:relative;cursor:pointer;font-size:.95rem;padding-bottom:4px;border-bottom:1px solid transparent}
+.seg input{position:absolute;left:0;top:0;width:1px;height:1px;margin:0;padding:0;border:0;opacity:0;pointer-events:none}
+.seg label:has(input:checked){border-bottom-color:var(--brass)}
+.ok{border-top:1px solid var(--brass);padding-top:22px;display:grid;gap:8px}
+.consent{font-size:.82rem;color:var(--muted)}
+.consent a{border-bottom:1px solid currentColor}
+/* panel (quiz) */
+.panel{background:var(--surface);padding:clamp(24px,4vw,48px);border-radius:2px;display:grid;gap:28px}
+.band.alt .panel{background:var(--bg)}
+/* page head with photo */
+.pagehead{position:relative;min-height:clamp(380px,56vh,620px);display:flex;align-items:flex-end;color:var(--on-dark);background:var(--ink-2);overflow:hidden}
+.pagehead img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
+.pagehead::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,21,19,.25),rgba(10,21,19,.7))}
+.pagehead .wrap{position:relative;z-index:1;width:100%;padding-block:40px;display:grid;gap:14px}
+.pagehead h1{font-size:clamp(2.2rem,4.6vw,3.6rem);color:var(--on-dark);max-width:20ch}
+.pagehead .lead{color:var(--on-dark-muted)}
+.crumbs{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--on-dark-muted);display:flex;gap:10px;flex-wrap:wrap}
+.crumbs.onlight{color:var(--muted)}
+.kv>div{display:flex;justify-content:space-between;gap:20px;padding:14px 0;border-top:1px solid var(--line);font-size:.98rem}
+.kv>div:last-child{border-bottom:1px solid var(--line)}
+.kv b{font-weight:500;color:var(--muted)}
+.article{max-width:68ch;display:grid;gap:22px;font-size:1.1rem;line-height:1.7}
+.article h2{font-size:1.7rem;margin-top:10px}
+.article ul{padding-left:1.2em;list-style:disc;display:grid;gap:6px}
+.contact-line{display:grid;grid-template-columns:110px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.contact-line:last-child{border-bottom:1px solid var(--line)}
+.contact-line code{font-family:var(--font-body);font-size:1.05rem;user-select:all}
+.contact-line .lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:600}
+@media (max-width:640px){.contact-line{grid-template-columns:minmax(0,1fr) auto;row-gap:6px}.contact-line .lbl{grid-column:1/-1}}
+.copy{border:0;background:none;color:var(--brass);cursor:pointer;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;padding:0}
+/* footer */
+footer{background:var(--ink-2);color:var(--on-dark);padding-block:56px 120px}
+footer .wrap{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:32px}
+footer a{display:block;padding:4px 0;color:var(--on-dark-muted);font-size:.95rem}
+footer a:hover{color:var(--on-dark)}
+footer h4{font-family:var(--font-body);font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--on-dark-muted);margin-bottom:10px;font-weight:600}
+footer .credits{grid-column:1/-1;border-top:1px solid var(--on-dark-line);padding-top:20px;font-size:.78rem;color:var(--on-dark-muted);line-height:1.6}
+@media (max-width:860px){footer .wrap{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){footer .wrap{grid-template-columns:1fr}}
+@media (min-width:1001px){footer{padding-bottom:56px}}
+/* mobile bottom bar */
+.bar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:9;background:var(--ink-2);color:var(--on-dark);border-top:1px solid var(--on-dark-line);padding:0 max(0px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(0px,env(safe-area-inset-left,0px))}
+.bar .wrap{display:grid;grid-template-columns:1fr 1fr 1.5fr;padding:0}
+.bar a{display:flex;align-items:center;justify-content:center;padding:17px 8px;font-size:.74rem;text-transform:uppercase;letter-spacing:.12em;border-left:1px solid var(--on-dark-line)}
+.bar a:first-child{border-left:0}
+.bar a.main{background:var(--on-dark);color:#0E1F1B;font-weight:600}
+@media (max-width:1000px){.bar{display:block}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:2px;font-size:.9rem;z-index:20;max-width:calc(100% - 32px);text-align:center;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.toast.show{opacity:1}
+@media (min-width:1001px){.toast{bottom:28px}}
+.view{display:none}
+.view.on{display:block}
+.note{font-size:.82rem;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+
+<header class="hdr">
+  <div class="wrap">
+    <a class="logo" href="#home" aria-label="Home Office & Co, на главную"><span class="mark">H</span><span class="name">Home Office &amp; Co</span></a>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#directions">Направления</a>
+      <a href="#services">Услуги</a>
+      <a href="#team">Команда</a>
+      <a href="#blog">Журнал</a>
+      <a href="#contacts">Контакты</a>
+      <div class="lang" role="group" aria-label="Язык"><button class="on" type="button">RU</button><button type="button" data-lang="en">EN</button></div>
+      <a class="btn light sm" href="#contacts">Консультация</a>
+    </nav>
+    <button class="burger" type="button" aria-label="Меню" aria-expanded="false" id="burger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 7h18M3 12h18M3 17h18"/></svg></button>
+  </div>
+</header>
+<div class="mnav" id="mnav"><div class="wrap">
+  <a href="#directions">Направления</a><a href="#services">Услуги</a><a href="#quiz">Подбор объекта</a><a href="#team">Команда</a><a href="#reviews">Отзывы</a><a href="#blog">Журнал</a><a href="#contacts">Контакты и консультация</a>
+</div></div>
+
+<main id="main">
+
+<!-- ============ ГЛАВНАЯ ============ -->
+<section class="view" data-view="home">
+  <div class="hero">
+    <img src="img/hero.jpg" alt="Бухта Ката-Ной на Пхукете с высоты" fetchpriority="high">
+    <div class="wrap">
+      <span class="eyebrow">Home Office &amp; Co · Таиланд, Бали, Дубай, Камбоджа</span>
+      <h1>Недвижимость в Таиланде для тех, кто покупает надолго</h1>
+      <p class="lead">Подбираем объекты от застройщиков, проверяем документы и остаёмся рядом после сделки: аренда, управление, перепродажа.</p>
+      <div class="hero-cta"><a class="btn light" href="#contacts">Записаться на консультацию</a><a class="arrow" href="#quiz">или подобрать объект за две минуты</a></div>
+    </div>
+  </div>
+  <div class="wrap"><div class="stats">
+    <div class="stat"><b>5 лет</b><span>на международных рынках недвижимости</span></div>
+    <div class="stat"><b>100+</b><span>клиентов из России и СНГ, которые получили ключи</span></div>
+    <div class="stat"><b>15 минут</b><span>до ответа брокера в рабочее время</span></div>
+  </div></div>
+
+  <div class="band"><div class="wrap">
+    <div class="head"><span class="eyebrow">Направления</span><h2>Где подбираем</h2><p class="lead">Упор на Таиланд. Бали, Дубай и Камбоджу предлагаем, когда они лучше отвечают вашей задаче.</p></div>
+    <div class="tiles">
+      <a class="tile big" href="#phuket"><img src="img/phuket.jpg" alt="Пляжи Карон и Ката, Пхукет" loading="lazy"><div class="t"><h3>Пхукет</h3><span>Аренда круглый год, международные школы, виллы и кондо от застройщиков</span></div></a>
+      <a class="tile" href="#pattaya"><img src="img/pattaya.jpg" alt="Набережная Паттайи" loading="lazy"><div class="t"><h3>Паттайя</h3><span>Город у моря, порог входа ниже</span></div></a>
+      <a class="tile" href="#bali"><img src="img/bali.jpg" alt="Скалы Улувату, Бали" loading="lazy"><div class="t"><h3>Бали</h3><span>Виллы под аренду в Чангу и Улувату</span></div></a>
+      <a class="tile" href="#dubai"><img src="img/dubai.jpg" alt="Дубай Марина" loading="lazy"><div class="t"><h3>Дубай</h3><span>Полная собственность и резидентская виза</span></div></a>
+      <a class="tile" href="#cambodia"><img src="img/cambodia.jpg" alt="Пляж Прек Тренг, Камбоджа" loading="lazy"><div class="t"><h3>Камбоджа</h3><span>Самый низкий порог входа в регионе</span></div></a>
+    </div>
+  </div></div>
+
+  <div class="band alt"><div class="wrap split">
+    <div class="stack" style="gap:26px">
+      <span class="eyebrow">О компании</span>
+      <h2 style="font-size:clamp(1.7rem,3vw,2.4rem);line-height:1.25">«Мы не продаём картинки. Если район или проект не подходит под вашу цель, скажем об этом до сделки, а не после».</h2>
+      <div class="split" style="grid-template-columns:72px 1fr;gap:18px;align-items:center"><div class="portrait" style="font-size:1.6rem">И</div><div><p style="font-weight:500">Иван, основатель</p><p class="small muted">Пять лет в недвижимости Таиланда и ОАЭ. Покупает объекты и для себя.</p></div></div>
+    </div>
+    <ul class="lines">
+      <li><h3>Моментальный ответ</h3><p class="muted">Заявка уходит брокеру сразу. В рабочее время отвечаем за пятнадцать минут.</p></li>
+      <li><h3>Сделка от А до Я и после</h3><p class="muted">Изучаем рынок, проверяем документы, ведём оплату и регистрацию. Потом помогаем сдать и, когда нужно, продать.</p></li>
+      <li><h3>Инвестируем сами</h3><p class="muted">Покупаем объекты для себя и для совместных проектов, поэтому знаем застройщиков не по буклетам.</p></li>
+      <li><h3>Говорим как есть</h3><p class="muted">Без приукрашивания: разворачиваем рынок таким, какой он есть, с рисками и сезонностью.</p></li>
+    </ul>
+  </div></div>
+
+  <div class="band"><div class="wrap">
+    <div class="head"><span class="eyebrow">Проекты</span><h2>С чем работаем сейчас</h2><p class="lead">Публикуем немного. Полную подборку с ценами и графиками оплаты присылаем после короткого разговора о вашей задаче.</p></div>
+    <div class="projects">
+      <a class="project" href="#bangtao"><div class="photo r43"><img src="img/villa.jpg" alt="Вилла с бассейном" loading="lazy"></div><h3>Виллы у лагуны, Банг Тао</h3><div class="meta"><span>Пхукет · виллы 3–4 спальни</span><span>Сдача 2027 · цена по запросу</span></div></a>
+      <a class="project" href="#bangtao"><div class="photo r43"><img src="img/kata.jpg" alt="Пляж Ката" loading="lazy"></div><h3>Апартаменты в 400 м от пляжа Ката</h3><div class="meta"><span>Пхукет · студии и 1–2 спальни</span><span>Готово · цена по запросу</span></div></a>
+      <a class="project" href="#bangtao"><div class="photo r43"><img src="img/naiharn.jpg" alt="Бухта Най Харн" loading="lazy"></div><h3>Дома для жизни, Най Харн</h3><div class="meta"><span>Пхукет · таунхаусы и виллы</span><span>Сдача 2026 · цена по запросу</span></div></a>
+    </div>
+    <p class="note" style="margin-top:36px">Часть объектов не публикуем по просьбе застройщиков: закрытые предложения и старты продаж показываем на консультации. <a class="arrow" href="#quiz" style="margin-left:6px">Запросить подборку</a></p>
+  </div></div>
+
+  <div class="band alt"><div class="wrap">
+    <div class="head"><span class="eyebrow">Как проходит сделка</span><h2>Пять шагов от первого звонка до ключей</h2></div>
+    <ol class="steps">
+      <li><i>01</i><div><h3>Созвон и подбор</h3><p class="muted">Уточняем цель, бюджет и сроки. Через день присылаем три–пять объектов с ценами и графиком оплаты.</p></div></li>
+      <li><i>02</i><div><h3>Просмотр</h3><p class="muted">Онлайн по видеосвязи или на острове. Показываем район, а не только стройку.</p></div></li>
+      <li><i>03</i><div><h3>Проверка и бронь</h3><p class="muted">Проверяем застройщика, разрешения и договор. Бронируете объект депозитом.</p></div></li>
+      <li><i>04</i><div><h3>Оплата и регистрация</h3><p class="muted">Платежи по этапам стройки. Помогаем с переводом средств и регистрацией права.</p></div></li>
+      <li><i>05</i><div><h3>Ключи и дальше</h3><p class="muted">Приёмка, меблировка, сдача в аренду через партнёров, перепродажа, когда понадобится.</p></div></li>
+      <li><i>&nbsp;</i><div><a class="arrow" href="#deal">Что именно проверяем до оплаты</a></div></li>
+    </ol>
+  </div></div>
+
+  <div class="band"><div class="wrap split rev">
+    <div class="photo r45"><img src="img/bangtao.jpg" alt="Пляж Банг Тао" loading="lazy"></div>
+    <div class="stack" style="gap:26px">
+      <span class="eyebrow">Команда</span>
+      <h2>Один брокер ведёт вас от первого созвона до ключей</h2>
+      <p class="lead">Брокеры живут на Пхукете и в Паттайе, поэтому знают районы по дням, а не по картинкам. Юрист проверяет каждый договор до брони.</p>
+      <ul class="lines">
+        <li><h3>Иван, основатель</h3><p class="muted">Инвесторы и сложные сделки. Русский, английский.</p></li>
+        <li><h3>Брокер, Пхукет</h3><p class="muted">Показы онлайн и на острове. Русский, английский, тайский.</p></li>
+        <li><h3>Юрист по сделкам</h3><p class="muted">Договоры, застройщики, регистрация права.</p></li>
+      </ul>
+      <a class="arrow" href="#team">Вся команда</a>
+    </div>
+  </div></div>
+
+  <div class="band alt"><div class="wrap">
+    <div class="head"><span class="eyebrow">Отзывы</span><h2>Что говорят после сделки</h2></div>
+    <div class="quotes">
+      <div class="quote"><p class="t">«Покупали удалённо, в Таиланд прилетели уже на приёмку. Все документы были переведены заранее, вопросы закрывались в тот же день».</p><p class="who">Пример отзыва · Москва, апартаменты в Банг Тао</p></div>
+      <div class="quote"><p class="t">«Отговорили от проекта, который нравился по картинкам, и показали, почему там плохо сдаётся. Взяли другой, сдаём с первого месяца».</p><p class="who">Пример отзыва · Новосибирск, инвестиция</p></div>
+    </div>
+    <p style="margin-top:32px"><a class="arrow" href="#reviews">Все отзывы и видео</a></p>
+  </div></div>
+
+  <div class="band"><div class="wrap split">
+    <div class="stack" style="gap:16px"><span class="eyebrow">Частые вопросы</span><h2>Что спрашивают при первом звонке</h2><p class="lead">Пять вопросов, с которых начинается почти каждый разговор. Остальное разберём на консультации.</p></div>
+    <div class="faq">
+      <details><summary>Могу ли я владеть недвижимостью в Таиланде?</summary><div class="a">Квартиру в кондоминиуме можно оформить в полную собственность в пределах иностранной квоты здания, это 49 % площади. Дома и виллы с землёй оформляются через долгосрочную аренду земли на 30 лет с продлениями или через компанию.</div></details>
+      <details><summary>Сколько стоит квадратный метр?</summary><div class="a">Зависит от района, расстояния до пляжа и стадии стройки, разброс большой. Прайс не публикуем: присылаем подборку с реальными ценами под ваш бюджет после короткого созвона.</div></details>
+      <details><summary>Как происходит оплата?</summary><div class="a">Бронь депозитом, затем договор и платежи по этапам стройки. Помогаем с переводом средств из России и валютным контролем, актуальную схему обсуждаем на созвоне.</div></details>
+      <details><summary>Какой район для жизни, а какой для инвестиций?</summary><div class="a">Для аренды сильнее Банг Тао, Лайян и Камала. Для жизни и зимовки чаще выбирают Раваи, Най Харн и Чалонг: спокойнее и дешевле.</div></details>
+      <details><summary>Даёт ли покупка визу?</summary><div class="a">Сама покупка визу не даёт. Есть долгосрочные визы, например Thailand Privilege и LTR при инвестициях от 500 000 $, куда можно включить недвижимость.</div></details>
+    </div>
+  </div></div>
+
+  <div class="photo-band band"><img src="img/sunset.jpg" alt="" loading="lazy"><div class="wrap split">
+    <div class="stack" style="gap:18px"><span class="eyebrow">Гид инвестора</span><h2>Таиланд, Бали и Дубай для инвестора: гид 2026</h2><p class="lead">Собственность для иностранцев, порядок оплаты, налоги, районы и сезонность на двадцати страницах. Без рекламы проектов.</p></div>
+    <form class="form" id="guide" novalidate>
+      <div class="field"><label for="g-contact">Куда прислать: почта или Telegram</label><input id="g-contact" type="text" placeholder="name@mail.ru или @nickname"></div>
+      <div><button class="btn light" type="submit">Получить гид</button></div>
+      <p class="consent" style="color:var(--on-dark-muted)">Нажимая кнопку, вы соглашаетесь с <a href="#privacy">политикой конфиденциальности</a>.</p>
+      <div class="ok" id="gdone" hidden><p>Отправили. Если письмо не пришло за пять минут, проверьте папку «Промоакции».</p></div>
+    </form>
+  </div><span class="credit">Фото: Anton Zelenov</span></div>
+
+  <div class="band alt"><div class="wrap">
+    <div class="head"><span class="eyebrow">Журнал</span><h2>Ответы длиннее, чем помещаются в чат</h2></div>
+    <div class="journal">
+      <a href="#article"><div class="stack" style="gap:6px"><span class="r">Право собственности</span><h3>Freehold и leasehold на Пхукете: что может купить иностранец</h3></div><span class="m">6 минут</span></a>
+      <a href="#article"><div class="stack" style="gap:6px"><span class="r">Оплата</span><h3>Как платить за квартиру в Таиланде из России</h3></div><span class="m">5 минут</span></a>
+      <a href="#article"><div class="stack" style="gap:6px"><span class="r">Районы</span><h3>Районы Пхукета: где жить, а где сдавать</h3></div><span class="m">8 минут</span></a>
+    </div>
+    <p style="margin-top:32px"><a class="arrow" href="#blog">Все статьи</a></p>
+  </div></div>
+
+  <div class="dark band"><div class="wrap split" style="align-items:center">
+    <div class="stack" style="gap:16px"><h2>Поговорим о вашей задаче</h2><p class="lead">Тридцать минут по видеосвязи: расскажем, что реально купить под ваш бюджет и цель, и чего делать не стоит.</p></div>
+    <div class="stack" style="gap:16px;justify-items:start"><a class="btn light" href="#contacts">Записаться на консультацию</a><a class="arrow" href="#contacts" style="color:var(--on-dark)">или написать в Telegram</a></div>
+  </div></div>
+</section>
+
+<!-- ============ НАПРАВЛЕНИЯ ============ -->
+<section class="view" data-view="directions">
+  <div class="band"><div class="wrap">
+    <div class="head"><span class="eyebrow">Направления</span><h2>Страны и города, где мы работаем</h2><p class="lead">Каждое направление решает свою задачу. Коротко о том, кому подходит, и ссылка на подробную страницу.</p></div>
+    <div class="tiles" style="grid-auto-rows:260px">
+      <a class="tile big" href="#thailand"><img src="img/phuket.jpg" alt="Пхукет" loading="lazy"><div class="t"><h3>Таиланд: Пхукет и Паттайя</h3><span>Основное направление. Спрос на аренду, понятные правила для иностранцев, прямые рейсы в сезон</span></div></a>
+      <a class="tile" href="#bali"><img src="img/bali.jpg" alt="Бали" loading="lazy"><div class="t"><h3>Бали</h3><span>Виллы под краткосрочную аренду, модель leasehold</span></div></a>
+      <a class="tile" href="#dubai"><img src="img/dubai.jpg" alt="Дубай" loading="lazy"><div class="t"><h3>Дубай</h3><span>Полная собственность, рассрочка, резидентская виза</span></div></a>
+      <a class="tile" href="#cambodia" style="grid-column:span 2"><img src="img/cambodia.jpg" alt="Камбоджа" loading="lazy"><div class="t"><h3>Камбоджа</h3><span>Кондо в собственность иностранцу, низкий порог входа</span></div></a>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ ТАИЛАНД ============ -->
+<section class="view" data-view="thailand">
+  <div class="pagehead"><img src="img/naiharn.jpg" alt="Бухта Най Харн"><div class="wrap"><div class="crumbs"><a href="#directions">Направления</a><span>/</span><span>Таиланд</span></div><h1>Пхукет для аренды и жизни у моря, Паттайя для бюджета и города</h1></div></div>
+  <div class="band"><div class="wrap split">
+    <div class="stack" style="gap:20px"><p class="lead">Иностранцы покупают кондо в полную собственность, виллы через долгосрочную аренду земли. Сезон аренды с ноября по март, но Пхукет сдаётся и летом.</p>
+      <ul class="lines">
+        <li><a href="#phuket"><h3>Пхукет</h3></a><p class="muted">Остров, шесть ключевых районов, международные школы, аэропорт с прямыми рейсами.</p><a class="arrow" href="#phuket">Районы Пхукета</a></li>
+        <li><a href="#pattaya"><h3>Паттайя</h3></a><p class="muted">Город на берегу, два часа от Бангкока, цены ниже, чем на Пхукете.</p><a class="arrow" href="#pattaya">Подробнее</a></li>
+      </ul>
+    </div>
+    <ul class="lines"><li><span class="eyebrow">Как покупают иностранцы</span></li><li><h3>Кондо: полная собственность</h3><p class="muted">В пределах иностранной квоты 49 % здания. Самый простой вариант для инвестора.</p></li><li><h3>Вилла: аренда земли на 30 лет</h3><p class="muted">С правом продления, дом в собственности. Стандарт для вилл на Пхукете.</p></li><li><h3>Оплата по этапам</h3><p class="muted">Бронь, договор, платежи по графику стройки. Помогаем с переводом средств.</p></li></ul>
+  </div></div>
+</section>
+
+<!-- ============ ПХУКЕТ ============ -->
+<section class="view" data-view="phuket">
+  <div class="pagehead"><img src="img/phuket.jpg" alt="Пляжи Ката и Карон с высоты" style="object-position:50% 30%"><div class="wrap"><div class="crumbs"><a href="#directions">Направления</a><span>/</span><a href="#thailand">Таиланд</a><span>/</span><span>Пхукет</span></div><h1>Остров, где район решает больше, чем метраж</h1><p class="lead">Запад сдаётся дороже и круглый год, юг спокойнее и дешевле для жизни.</p></div></div>
+  <div class="band"><div class="wrap">
+    <div class="head"><span class="eyebrow">Районы</span><h2>Где жить, а где сдавать</h2></div>
+    <div class="projects">
+      <a class="project" href="#bangtao"><div class="photo r43"><img src="img/bangtao.jpg" alt="Банг Тао" loading="lazy"></div><h3>Банг Тао</h3><div class="meta"><span>Лагуна, пляжные клубы, школы</span><span>Аренда · семьи</span></div></a>
+      <a class="project" href="#bangtao"><div class="photo r43"><img src="img/villa.jpg" alt="Лайян" loading="lazy"></div><h3>Лайян</h3><div class="meta"><span>Тихий пляж, виллы премиум-класса</span><span>Премиум</span></div></a>
+      <a class="project" href="#bangtao"><div class="photo r43"><img src="img/sunset.jpg" alt="Камала" loading="lazy"></div><h3>Камала</h3><div class="meta"><span>Виллы с видом на море</span><span>Премиум · аренда</span></div></a>
+      <a class="project" href="#bangtao"><div class="photo r43"><img src="img/kata.jpg" alt="Ката" loading="lazy"></div><h3>Ката и Карон</h3><div class="meta"><span>Туристические пляжи, кондо</span><span>Аренда</span></div></a>
+      <a class="project" href="#bangtao"><div class="photo r43"><img src="img/naiharn.jpg" alt="Най Харн" loading="lazy"></div><h3>Раваи и Най Харн</h3><div class="meta"><span>Юг острова, живут экспаты</span><span>Жизнь · зимовка</span></div></a>
+      <a class="project" href="#bangtao"><div class="photo r43"><img src="img/hero.jpg" alt="Чалонг" loading="lazy"></div><h3>Чалонг</h3><div class="meta"><span>Марина, цены ниже</span><span>Жизнь · бюджет</span></div></a>
+    </div>
+    <p class="note" style="margin-top:36px">В прототипе все районы ведут на одну страницу-пример, Банг Тао. Список районов уточняем с вами.</p>
+  </div></div>
+  <div class="dark band tight"><div class="wrap split" style="align-items:center"><div class="stack" style="gap:10px"><span class="eyebrow">Застройщики-партнёры</span><h2 style="font-size:1.8rem">Работаем с проектами на старте продаж и на стадии готовности</h2></div><p class="lead">Логотипы и список партнёров добавим после согласования. Условия по каждому проекту рассказываем на консультации.</p></div></div>
+</section>
+
+<!-- ============ РАЙОН: БАНГ ТАО ============ -->
+<section class="view" data-view="bangtao">
+  <div class="pagehead"><img src="img/bangtao.jpg" alt="Пляж Банг Тао"><div class="wrap"><div class="crumbs"><a href="#directions">Направления</a><span>/</span><a href="#thailand">Таиланд</a><span>/</span><a href="#phuket">Пхукет</a><span>/</span><span>Банг Тао</span></div><h1>Банг Тао: лагуна, школы и самый ровный спрос на аренду</h1></div></div>
+  <div class="band"><div class="wrap split">
+    <div class="stack" style="gap:24px">
+      <p class="lead">Восьмикилометровый пляж на западном побережье, комплекс Лагуна, пляжные клубы и рестораны. Сюда едут семьи на год и инвесторы за арендой круглый год.</p>
+      <div class="kv"><div><b>Кому подходит</b><span>Инвесторам, семьям с детьми</span></div><div><b>Типы объектов</b><span>Кондо, виллы, таунхаусы</span></div><div><b>До аэропорта</b><span>25–30 минут</span></div><div><b>Школы</b><span>Международные в десяти минутах</span></div><div><b>Цены</b><span>По запросу, пришлём подборку</span></div></div>
+      <div class="hero-cta" style="margin:0"><a class="btn" href="#quiz">Получить подборку по Банг Тао</a><a class="arrow" href="#contacts">Записаться на показ</a></div>
+    </div>
+    <div class="stack" style="gap:12px"><div class="photo r45"><img src="img/villa.jpg" alt="Вилла в Банг Тао" loading="lazy"></div><p class="cap">Виллы у лагуны, пример проекта</p></div>
+  </div></div>
+  <div class="band alt"><div class="wrap"><ul class="lines cols3">
+    <li><h3>Для жизни</h3><p class="muted">Тихо вечером, при этом рестораны, спортклубы и супермаркеты в пяти–десяти минутах. Семьи выбирают район из-за школ и безопасного пляжа.</p></li>
+    <li><h3>Для инвестиций</h3><p class="muted">Премиальный турист и длительная аренда экспатов дают спрос в низкий сезон. Ориентир по доходности даём по конкретному проекту.</p></li>
+    <li><h3>На что смотреть</h3><p class="muted">Расстояние до пляжа пешком, управляющая компания для аренды, стадия стройки и репутация застройщика. Проверяем до брони.</p></li>
+  </ul></div></div>
+</section>
+
+<!-- ============ ДРУГИЕ СТРАНЫ ============ -->
+<section class="view" data-view="pattaya">
+  <div class="pagehead"><img src="img/pattaya.jpg" alt="Паттайя"><div class="wrap"><div class="crumbs"><a href="#directions">Направления</a><span>/</span><a href="#thailand">Таиланд</a><span>/</span><span>Паттайя</span></div><h1>Паттайя: город у моря с порогом входа ниже, чем на Пхукете</h1></div></div>
+  <div class="band"><div class="wrap split"><p class="lead">Два часа от Бангкока, развитая инфраструктура, много готовых кондо. Районы Пратамнак, Джомтьен и Вонгамат, где покупают под аренду и зимовку.</p><div class="stack" style="justify-items:start;gap:16px"><a class="btn" href="#quiz">Подобрать объект в Паттайе</a><a class="arrow" href="#contacts">Записаться на консультацию</a></div></div></div>
+</section>
+<section class="view" data-view="bali">
+  <div class="pagehead"><img src="img/bali.jpg" alt="Бали"><div class="wrap"><div class="crumbs"><a href="#directions">Направления</a><span>/</span><span>Бали</span></div><h1>Бали: виллы под аренду в Чангу, Убуде и Улувату</h1></div></div>
+  <div class="band"><div class="wrap split"><p class="lead">Иностранцы оформляют землю через долгосрочную аренду, дом в собственность. Сильный спрос на краткосрочную аренду, сезонность мягче, чем в Таиланде.</p><div class="stack" style="justify-items:start;gap:16px"><a class="btn" href="#quiz">Подобрать виллу на Бали</a><a class="arrow" href="#contacts">Записаться на консультацию</a></div></div></div>
+</section>
+<section class="view" data-view="dubai">
+  <div class="pagehead"><img src="img/dubai.jpg" alt="Дубай Марина"><div class="wrap"><div class="crumbs"><a href="#directions">Направления</a><span>/</span><span>Дубай</span></div><h1>Дубай: полная собственность, рассрочка и резидентская виза</h1></div></div>
+  <div class="band"><div class="wrap split"><p class="lead">Квартиры от застройщиков в зонах полной собственности с оплатой в рассрочку на этапе стройки. Покупка от определённой суммы даёт право на резидентскую визу.</p><div class="stack" style="justify-items:start;gap:16px"><a class="btn" href="#quiz">Подобрать объект в Дубае</a><a class="arrow" href="#contacts">Записаться на консультацию</a></div></div></div>
+</section>
+<section class="view" data-view="cambodia">
+  <div class="pagehead"><img src="img/cambodia.jpg" alt="Камбоджа"><div class="wrap"><div class="crumbs"><a href="#directions">Направления</a><span>/</span><span>Камбоджа</span></div><h1>Камбоджа: самый низкий порог входа в регионе</h1></div></div>
+  <div class="band"><div class="wrap split"><p class="lead">Кондо в Пномпене и Сиануквиле, иностранцам разрешена собственность на квартиры выше первого этажа. Подходит для диверсификации небольших бюджетов.</p><div class="stack" style="justify-items:start;gap:16px"><a class="btn" href="#quiz">Подобрать объект в Камбодже</a><a class="arrow" href="#contacts">Записаться на консультацию</a></div></div></div>
+</section>
+
+<!-- ============ УСЛУГИ ============ -->
+<section class="view" data-view="services">
+  <div class="band"><div class="wrap">
+    <div class="head"><span class="eyebrow">Услуги</span><h2>Три сценария, в которых мы полезны</h2><p class="lead">Берём на себя всё между «хочу квартиру у моря» и «получил ключи и первый платёж от арендатора».</p></div>
+    <ul class="lines">
+      <li style="grid-template-columns:minmax(0,1fr) auto;display:grid;align-items:center"><div><h3>Инвесторам</h3><p class="muted">Объекты на старте продаж, оценка района и спроса, сдача через партнёров, перепродажа.</p></div><a class="arrow" href="#investors">Подробнее</a></li>
+      <li style="grid-template-columns:minmax(0,1fr) auto;display:grid;align-items:center"><div><h3>Для жизни и зимовки</h3><p class="muted">Район под ваш образ жизни, школы и медицина, визы, сдача квартиры, пока вас нет.</p></div><a class="arrow" href="#living">Подробнее</a></li>
+      <li style="grid-template-columns:minmax(0,1fr) auto;display:grid;align-items:center"><div><h3>Сопровождение сделки</h3><p class="muted">Проверка застройщика и договора, оплата, регистрация права, приёмка.</p></div><a class="arrow" href="#deal">Подробнее</a></li>
+    </ul>
+  </div></div>
+</section>
+<section class="view" data-view="investors">
+  <div class="pagehead"><img src="img/villa.jpg" alt="Вилла с бассейном"><div class="wrap"><div class="crumbs"><a href="#services">Услуги</a><span>/</span><span>Инвесторам</span></div><h1>Считаем доходность по конкретному объекту, а не обещаем проценты</h1></div></div>
+  <div class="band"><div class="wrap split">
+    <div class="stack" style="gap:20px"><p class="lead">Большинство наших клиентов уже владеют недвижимостью в России и расширяют портфель. Подбираем объекты, которые сдаются в низкий сезон, и показываем расчёт до брони.</p><a class="btn" href="#quiz" style="justify-self:start">Получить подборку для инвестиций</a></div>
+    <ul class="lines"><li><p>Подбор проектов на старте продаж и готовых объектов с историей аренды</p></li><li><p>Оценка района: спрос, конкуренция, управляющие компании</p></li><li><p>Схема оплаты и перевод средств из России</p></li><li><p>Сдача в аренду через партнёров, отчёты собственнику</p></li><li><p>Перепродажа, когда понадобится выйти из объекта</p></li></ul>
+  </div></div>
+</section>
+<section class="view" data-view="living">
+  <div class="pagehead"><img src="img/sunset.jpg" alt="Закат на Банг Тао"><div class="wrap"><div class="crumbs"><a href="#services">Услуги</a><span>/</span><span>Для жизни и зимовки</span></div><h1>Район под ваш образ жизни, а квартира сдаётся, пока вас нет</h1></div></div>
+  <div class="band"><div class="wrap split">
+    <div class="stack" style="gap:20px"><p class="lead">Зимуете с ноября по март, остальное время квартира работает. Подбираем район по школам, медицине и расстоянию до пляжа, помогаем с визой, машиной и управляющей компанией.</p><a class="btn" href="#quiz" style="justify-self:start">Подобрать дом для зимовки</a></div>
+    <ul class="lines"><li><p>Район и дом под семью, пару или одиночную зимовку</p></li><li><p>Долгосрочные визы: Thailand Privilege, LTR, учебные и другие</p></li><li><p>Сдача на летние месяцы через партнёров</p></li><li><p>После покупки: мебель, интернет, страховка, школа</p></li></ul>
+  </div></div>
+</section>
+<section class="view" data-view="deal">
+  <div class="band"><div class="wrap">
+    <div class="crumbs onlight" style="margin-bottom:20px"><a href="#services">Услуги</a><span>/</span><span>Сопровождение сделки</span></div>
+    <div class="head"><span class="eyebrow">Сопровождение сделки</span><h2>Что проверяем и делаем до того, как вы заплатите</h2><p class="lead">Сделка за границей пугает не ценой, а неизвестностью. Ниже всё, что закрываем мы.</p></div>
+    <div class="steps">
+      <div><i>01</i><div><h3>До брони</h3><p class="muted">Застройщик: лицензии, реализованные проекты, разрешение на строительство. Иностранная квота и форма собственности. Договор на русском и английском.</p></div></div>
+      <div><i>02</i><div><h3>Оплата</h3><p class="muted">График платежей и защита депозита. Перевод средств из России и валютный контроль. Документы для регистрации.</p></div></div>
+      <div><i>03</i><div><h3>Регистрация и приёмка</h3><p class="muted">Регистрация права в Земельном департаменте. Приёмка объекта, список недоделок, контроль устранения. Передача ключей, в том числе удалённо.</p></div></div>
+      <div><i>04</i><div><h3>После покупки</h3><p class="muted">Сдача через управляющие компании-партнёры. Налоги и коммунальные платежи. Перепродажа, когда потребуется.</p></div></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ ПОДБОР ============ -->
+<section class="view" data-view="quiz">
+  <div class="band alt"><div class="wrap split">
+    <div class="stack" style="gap:18px"><span class="eyebrow">Подбор объекта</span><h2>Три вопроса, и мы пришлём два–три варианта</h2><p class="lead">Без обязательств. Брокер напишет в Telegram или WhatsApp в течение пятнадцати минут в рабочее время, с ценами и графиком оплаты.</p><p class="small muted">Хотите сразу поговорить? <a class="arrow" href="#contacts">Запишитесь на консультацию</a></p></div>
+    <form class="panel form" id="quiz" novalidate>
+      <div class="row3">
+        <div class="field"><label for="q-where">Где ищете</label><select id="q-where"><option value="">Выберите</option><option>Пхукет</option><option>Паттайя</option><option>Бали</option><option>Дубай</option><option>Камбоджа</option><option>Ещё не решил(а)</option></select></div>
+        <div class="field"><label for="q-goal">Для чего</label><select id="q-goal"><option value="">Выберите</option><option>Инвестиции и аренда</option><option>Для жизни или зимовки</option><option>И то и другое</option><option>Пока изучаю рынок</option></select></div>
+        <div class="field"><label for="q-budget">Бюджет</label><select id="q-budget"><option value="">Выберите</option><option>До 150 000 $</option><option>150 000 – 300 000 $</option><option>300 000 – 600 000 $</option><option>От 600 000 $</option><option>Пока не определился(ась)</option></select></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="q-name">Имя</label><input id="q-name" type="text" autocomplete="given-name" placeholder="Как к вам обращаться"></div>
+        <div class="field"><label for="q-contact">Телефон или Telegram</label><input id="q-contact" type="text" autocomplete="tel" placeholder="+7 … или @nickname"></div>
+      </div>
+      <div class="field"><span class="lbl">Куда написать</span><div class="seg"><label><input type="radio" name="channel" value="Telegram" checked><span>Telegram</span></label><label><input type="radio" name="channel" value="WhatsApp"><span>WhatsApp</span></label><label><input type="radio" name="channel" value="Звонок"><span>Позвонить</span></label></div></div>
+      <div><button class="btn" type="submit">Получить подборку</button></div>
+      <p class="consent">Нажимая кнопку, вы соглашаетесь с <a href="#privacy">политикой конфиденциальности</a>.</p>
+      <div class="ok" id="qdone" hidden><h3 id="qdone-title">Спасибо, подборка уже собирается</h3><p class="muted" id="qdone-text"></p><p class="small muted">В рабочей версии заявка с ответами уйдёт в amoCRM и брокеру в Telegram.</p></div>
+    </form>
+  </div></div>
+</section>
+
+<!-- ============ КОМАНДА ============ -->
+<section class="view" data-view="team">
+  <div class="band"><div class="wrap">
+    <div class="head"><span class="eyebrow">Команда</span><h2>Люди, которые ведут вашу сделку</h2><p class="lead">Небольшая команда без текучки: один брокер ведёт вас от первого созвона до ключей и остаётся на связи после.</p></div>
+    <div class="projects cols4">
+      <div class="project"><div class="portrait">И</div><h3>Иван, основатель</h3><div class="meta"><span>Инвесторы и сложные сделки</span><span>Русский, английский</span></div><a class="arrow small" href="#contacts">Написать в Telegram</a></div>
+      <div class="project"><div class="portrait">·</div><h3>Сооснователь и партнёр</h3><div class="meta"><span>Застройщики, схемы оплаты</span><span>Русский, английский</span></div><a class="arrow small" href="#contacts">Написать в Telegram</a></div>
+      <div class="project"><div class="portrait">·</div><h3>Брокер, Пхукет</h3><div class="meta"><span>Показы онлайн и на острове</span><span>Русский, английский, тайский</span></div><a class="arrow small" href="#contacts">Написать в Telegram</a></div>
+      <div class="project"><div class="portrait">·</div><h3>Юрист по сделкам</h3><div class="meta"><span>Договоры, регистрация права</span><span>Русский, английский</span></div><a class="arrow small" href="#contacts">Написать в Telegram</a></div>
+    </div>
+    <p class="note" style="margin-top:36px">Имена, портреты и описания заполним по вашим материалам. Съёмку команды лучше сделать одним стилем: нейтральный фон, естественный свет.</p>
+  </div></div>
+</section>
+
+<!-- ============ ОТЗЫВЫ ============ -->
+<section class="view" data-view="reviews">
+  <div class="band"><div class="wrap">
+    <div class="head"><span class="eyebrow">Отзывы</span><h2>Что говорят после сделки</h2><p class="lead">Тексты, скриншоты переписок и видео. В рабочей версии отзывы фильтруются по стране и задаче.</p></div>
+    <div class="quotes">
+      <div class="quote"><p class="t">«Покупали удалённо, в Таиланд прилетели уже на приёмку. Все документы были переведены заранее, вопросы закрывались в тот же день».</p><p class="who">Пример отзыва · Москва, апартаменты в Банг Тао</p></div>
+      <div class="quote"><p class="t">«Отговорили от проекта, который нравился по картинкам, и показали, почему там плохо сдаётся. Взяли другой, сдаём с первого месяца».</p><p class="who">Пример отзыва · Новосибирск, инвестиция</p></div>
+      <div class="quote"><p class="t">«Искали дом на зиму с ребёнком. Подобрали район рядом со школой, помогли с визой и машиной».</p><p class="who">Пример отзыва · Казань, зимовка</p></div>
+      <div class="quote"><div class="photo r169"><img src="img/kata.jpg" alt="" loading="lazy"></div><p class="who">Место для видеоотзыва или скриншота переписки · Красноярск, Паттайя</p></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ ЖУРНАЛ ============ -->
+<section class="view" data-view="blog">
+  <div class="band"><div class="wrap">
+    <div class="head"><span class="eyebrow">Журнал</span><h2>Ответы на вопросы, которые задают до покупки</h2><p class="lead">Короткие статьи без воды. Темы берём из созвонов с клиентами, одна–две новые в месяц.</p></div>
+    <div class="journal">
+      <a href="#article"><div class="stack" style="gap:6px"><span class="r">Право собственности</span><h3>Freehold и leasehold на Пхукете: что может купить иностранец</h3></div><span class="m">6 минут</span></a>
+      <a href="#article"><div class="stack" style="gap:6px"><span class="r">Оплата</span><h3>Как платить за квартиру в Таиланде из России</h3></div><span class="m">5 минут</span></a>
+      <a href="#article"><div class="stack" style="gap:6px"><span class="r">Районы</span><h3>Районы Пхукета: где жить, а где сдавать</h3></div><span class="m">8 минут</span></a>
+      <a href="#article"><div class="stack" style="gap:6px"><span class="r">Визы</span><h3>Даёт ли покупка недвижимости визу в Таиланд</h3></div><span class="m">4 минуты</span></a>
+      <a href="#article"><div class="stack" style="gap:6px"><span class="r">Содержание</span><h3>Сколько стоит содержать квартиру на Пхукете</h3></div><span class="m">5 минут</span></a>
+      <a href="#article"><div class="stack" style="gap:6px"><span class="r">Удалённая покупка</span><h3>Как купить квартиру удалённо: пошагово</h3></div><span class="m">7 минут</span></a>
+    </div>
+    <p class="note" style="margin-top:36px">В прототипе все статьи открывают одну статью-пример.</p>
+  </div></div>
+</section>
+<section class="view" data-view="article">
+  <div class="band"><div class="wrap">
+    <div class="crumbs onlight" style="margin-bottom:24px"><a href="#blog">Журнал</a><span>/</span><span>Право собственности</span></div>
+    <div class="article">
+      <span class="eyebrow">Право собственности · 6 минут</span>
+      <h1 style="font-size:clamp(2rem,4vw,3rem)">Freehold и leasehold на Пхукете: что может купить иностранец</h1>
+      <p class="lead">Коротко: квартиру в кондоминиуме можно оформить в полную собственность, виллу с землёй через долгосрочную аренду земли. Разбираем, что это значит на практике.</p>
+      <div class="photo r169"><img src="img/hero.jpg" alt="Пхукет с высоты" loading="lazy"></div>
+      <h2>Кондо: полная собственность в пределах квоты</h2>
+      <p>Иностранцам может принадлежать не больше 49 % площади квартир в здании. Пока квота не выбрана, вы оформляете freehold: право регистрируется на вас в Земельном департаменте, объект можно продавать, дарить и передавать по наследству.</p>
+      <h2>Виллы и земля: аренда на 30 лет</h2>
+      <p>Землёй иностранец владеть не может, поэтому виллы оформляются через аренду земли на 30 лет с правом продления. Дом при этом может быть в вашей собственности. Второй вариант, тайская компания, сложнее и требует реальной деятельности.</p>
+      <h2>Что проверить до брони</h2>
+      <ul><li>Сколько иностранной квоты осталось в конкретном здании</li><li>Условия продления аренды в договоре, а не на словах</li><li>Кто регистрирует право и в какие сроки</li></ul>
+      <p>Сомневаетесь, какой вариант подходит под вашу цель? Разберём на примере конкретного объекта.</p>
+      <div class="hero-cta" style="margin:0"><a class="btn" href="#quiz">Подобрать объект</a><a class="arrow" href="#blog">Другие статьи</a></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ КОНТАКТЫ ============ -->
+<section class="view" data-view="contacts">
+  <div class="band"><div class="wrap split">
+    <div class="stack" style="gap:24px">
+      <span class="eyebrow">Контакты</span>
+      <h2>Напишите в удобный мессенджер или запишитесь на консультацию</h2>
+      <p class="lead">Работаем без офиса: встречи проводим на объектах и в деловых пространствах Пхукета, Паттайи и Москвы. По времени ориентируемся на вас.</p>
+      <div>
+        <div class="contact-line"><span class="lbl">Telegram</span><code>@homeoffice_co</code><button class="copy" type="button" data-copy="@homeoffice_co">Скопировать</button></div>
+        <div class="contact-line"><span class="lbl">WhatsApp</span><code>+7 939 700-87-47</code><button class="copy" type="button" data-copy="+79397008747">Скопировать</button></div>
+        <div class="contact-line"><span class="lbl">Почта</span><code>hello@homeoffice.co</code><button class="copy" type="button" data-copy="hello@homeoffice.co">Скопировать</button></div>
+      </div>
+      <p class="small muted">Часы ответа: 9:00–21:00 по Пхукету, это 5:00–17:00 по Москве. Контакты в прототипе условные.</p>
+    </div>
+    <form class="panel form" id="book" novalidate>
+      <div class="stack" style="gap:6px"><span class="eyebrow">Консультация или просмотр</span><h3>Выберите удобное время</h3></div>
+      <div class="row2">
+        <div class="field"><label for="b-name">Имя</label><input id="b-name" type="text" autocomplete="given-name" placeholder="Как к вам обращаться"></div>
+        <div class="field"><label for="b-contact">Telegram или телефон</label><input id="b-contact" type="text" autocomplete="tel" placeholder="@nickname или +7 …"></div>
+      </div>
+      <div class="field"><label for="b-where">Что обсуждаем</label><select id="b-where"><option>Пхукет</option><option>Паттайя</option><option>Бали</option><option>Дубай</option><option>Камбоджа</option><option>Пока не решил(а)</option></select></div>
+      <div class="row2">
+        <div class="field"><label for="b-date">Дата</label><input id="b-date" type="date"></div>
+        <div class="field"><label for="b-time">Время по Пхукету</label><select id="b-time"><option>10:00</option><option>12:00</option><option>14:00</option><option>16:00</option><option>18:00</option></select></div>
+      </div>
+      <div class="field"><span class="lbl">Формат</span><div class="seg"><label><input type="radio" name="fmt" value="Онлайн по видеосвязи" checked><span>Онлайн по видеосвязи</span></label><label><input type="radio" name="fmt" value="На объекте"><span>На объекте</span></label></div></div>
+      <div><button class="btn" type="submit">Записаться</button></div>
+      <p class="consent">Подтвердим время в мессенджере. Нажимая кнопку, вы соглашаетесь с <a href="#privacy">политикой конфиденциальности</a>.</p>
+      <div class="ok" id="bdone" hidden><h3>Заявка принята</h3><p class="muted" id="bdone-text"></p></div>
+    </form>
+  </div></div>
+</section>
+
+<!-- ============ СЛУЖЕБНЫЕ ============ -->
+<section class="view" data-view="privacy">
+  <div class="band"><div class="wrap"><div class="article"><h1 style="font-size:clamp(2rem,4vw,3rem)">Политика конфиденциальности</h1><p class="lead">Текст политики и согласия на обработку персональных данных подготовим под юрлицо компании: какие данные собирают формы сайта, где они хранятся и как их удалить.</p></div></div></div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  <div class="stack" style="gap:12px"><a class="logo" href="#home" style="padding:0"><span class="mark">H</span><span class="name">Home Office &amp; Co</span></a><p class="small" style="color:var(--on-dark-muted);max-width:36ch">Международное агентство недвижимости. Таиланд, Бали, Дубай, Камбоджа.</p><p class="small" style="color:var(--on-dark-muted)">© 2026 Home Office &amp; Co</p></div>
+  <div><h4>Направления</h4><a href="#phuket">Пхукет</a><a href="#pattaya">Паттайя</a><a href="#bali">Бали</a><a href="#dubai">Дубай</a><a href="#cambodia">Камбоджа</a></div>
+  <div><h4>Услуги</h4><a href="#investors">Инвесторам</a><a href="#living">Для жизни и зимовки</a><a href="#deal">Сопровождение сделки</a><a href="#quiz">Подбор объекта</a></div>
+  <div><h4>Компания</h4><a href="#team">Команда</a><a href="#reviews">Отзывы</a><a href="#blog">Журнал</a><a href="#contacts">Контакты</a><a href="#privacy">Политика конфиденциальности</a></div>
+  <p class="credits">Прототип. Фотографии временные, из Wikimedia Commons: Roma Neus (CC BY 3.0), Bennypc (CC BY-SA 4.0), Raita Futo (CC BY 2.0), Anton Zelenov (CC BY-SA 4.0), Radek Kucharski (CC BY 2.0), ADwarf (общественное достояние), Don Ramey Logan (CC BY-SA 3.0), Emma Thery (CC BY-SA 4.0), a.canvas.of.light (CC BY 2.0), Norlando Pobre (CC BY 2.0), Dmitry Makeev (CC BY-SA 4.0). В рабочей версии будет собственная съёмка объектов и команды.</p>
+</div></footer>
+
+<div class="bar" aria-label="Быстрая связь"><div class="wrap"><a href="#contacts">Telegram</a><a href="#contacts">WhatsApp</a><a class="main" href="#contacts">Консультация</a></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  var views = Array.prototype.slice.call(document.querySelectorAll('.view'));
+  var tokens = views.map(function(v){ return v.getAttribute('data-view'); });
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.nav a, .mnav a'));
+  var mnav = document.getElementById('mnav'), burger = document.getElementById('burger');
+  var toastEl = document.getElementById('toast'), toastTimer;
+  function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 2800); }
+  function current(){ var t = (location.hash || '#home').slice(1); return tokens.indexOf(t) >= 0 ? t : 'home'; }
+  function show(t){
+    views.forEach(function(v){ v.classList.toggle('on', v.getAttribute('data-view') === t); });
+    var group = {phuket:'directions',thailand:'directions',bangtao:'directions',pattaya:'directions',bali:'directions',dubai:'directions',cambodia:'directions',investors:'services',living:'services',deal:'services',article:'blog'};
+    var active = group[t] || t;
+    navLinks.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#' + active); });
+    mnav.classList.remove('open'); burger.setAttribute('aria-expanded','false');
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange', function(){ show(current()); });
+  show(current());
+  burger.addEventListener('click', function(){ var open = mnav.classList.toggle('open'); burger.setAttribute('aria-expanded', open ? 'true' : 'false'); });
+  document.querySelectorAll('[data-lang]').forEach(function(b){ b.addEventListener('click', function(e){ e.preventDefault(); toast('Английская версия появится в рабочей версии: главная, направления, услуги, команда, контакты.'); }); });
+  document.querySelectorAll('[data-copy]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var v = b.getAttribute('data-copy');
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(v).then(function(){ toast('Скопировано: ' + v); }, function(){ selectPrev(b); }); } else { selectPrev(b); }
+    });
+  });
+  function selectPrev(b){ var code = b.previousElementSibling; if (!code) return; var r = document.createRange(); r.selectNodeContents(code); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); toast('Выделено, нажмите Ctrl+C или удерживайте для копирования'); }
+
+  var quiz = document.getElementById('quiz');
+  if (quiz) quiz.addEventListener('submit', function(e){
+    e.preventDefault();
+    var where = quiz.querySelector('#q-where').value, goal = quiz.querySelector('#q-goal').value, budget = quiz.querySelector('#q-budget').value;
+    var name = quiz.querySelector('#q-name').value.trim(), contact = quiz.querySelector('#q-contact').value.trim();
+    if (!where || !goal || !budget) { toast('Выберите страну, цель и бюджет, чтобы подборка была точной.'); return; }
+    if (!name || contact.length < 2) { toast('Укажите имя и контакт, иначе нам некуда прислать подборку.'); return; }
+    var ch = quiz.querySelector('input[name="channel"]:checked').value;
+    document.getElementById('qdone-title').textContent = 'Спасибо, ' + name + '. Подборка уже собирается';
+    document.getElementById('qdone-text').textContent = (ch === 'Звонок' ? 'Брокер позвонит' : 'Брокер напишет в ' + ch) + ' в течение пятнадцати минут в рабочее время (9:00–21:00 по Пхукету). Направление: ' + where + ', цель: ' + goal.toLowerCase() + ', бюджет: ' + budget.toLowerCase() + '.';
+    document.getElementById('qdone').hidden = false;
+    document.getElementById('qdone').scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+
+  var book = document.getElementById('book');
+  if (book) book.addEventListener('submit', function(e){
+    e.preventDefault();
+    var name = document.getElementById('b-name').value.trim(), contact = document.getElementById('b-contact').value.trim();
+    if (!name || !contact) { toast('Укажите имя и контакт, чтобы мы могли подтвердить время.'); return; }
+    var where = document.getElementById('b-where').value, date = document.getElementById('b-date').value, time = document.getElementById('b-time').value;
+    var fmt = book.querySelector('input[name="fmt"]:checked').value;
+    document.getElementById('bdone-text').textContent = name + ', записали: ' + where + (date ? ', ' + date : '') + ', ' + time + ' по Пхукету, ' + fmt.toLowerCase() + '. Подтвердим в мессенджере в течение пятнадцати минут в рабочее время.';
+    var bd = document.getElementById('bdone'); bd.hidden = false; bd.scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+
+  var guide = document.getElementById('guide');
+  if (guide) guide.addEventListener('submit', function(e){
+    e.preventDefault();
+    var c = document.getElementById('g-contact').value.trim();
+    if (c.length < 3) { toast('Укажите почту или ник в Telegram, куда прислать гид.'); return; }
+    document.getElementById('gdone').hidden = false;
+  });
+})();
+</script>

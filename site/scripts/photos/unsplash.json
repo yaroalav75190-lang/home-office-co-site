@@ -1,0 +1,148 @@
+{
+  "_note": "Sources of photos-src/unsplash/*.jpg (outside public/, never served). bangtao and sunset are not used: the site shows the Wikimedia photos of Bang Tao from photos-src/wikimedia. Picked 3 Nov 2026 from unsplash.com search (premium/plus results excluded; every pick re-checked: free photo). Unsplash License, https://unsplash.com/license. `location` is the Unsplash location field (contentLocation) or the author's tags, verbatim. Fetch: node scripts/photos/fetch-unsplash.mjs",
+  "hero": {
+    "id": "6yBdFYernH8",
+    "author": "Antonio Araujo",
+    "page": "https://unsplash.com/photos/a-birds-eye-view-of-a-beach-and-ocean-6yBdFYernH8",
+    "raw": "https://images.unsplash.com/photo-1729719022551-50b5f52792c0?ixlib=rb-4.1.0",
+    "size": "5464x3640",
+    "location": null,
+    "description": "Tags: phuket, beach life, thailand phuket, thai beach"
+  },
+  "phuket": {
+    "id": "peQvWjjNPwo",
+    "author": "Polina Kocheva",
+    "page": "https://unsplash.com/photos/a-body-of-water-surrounded-by-lush-green-trees-peQvWjjNPwo",
+    "raw": "https://images.unsplash.com/photo-1638085461414-b39de790997a?ixid=NHwxMjA3fDA&ixlib=rb-4.1.0",
+    "size": "4496x3000",
+    "location": "Ya Nui, Rawai, Mueang Phuket District, Phuket, Thailand",
+    "description": null
+  },
+  "bangtao": {
+    "id": "9n5AD1v5_NQ",
+    "author": "Sam",
+    "page": "https://unsplash.com/photos/a-beautiful-tropical-beach-with-clear-blue-water-9n5AD1v5_NQ",
+    "raw": "https://images.unsplash.com/photo-1741014597612-fbb4f08dad86?ixid=NHwxMjA3fDA&ixlib=rb-4.1.0",
+    "size": "6078x4052",
+    "location": "Surin Beach, Choeng Thale, Phuket, Thailand",
+    "description": null
+  },
+  "sunset": {
+    "id": "44LPPdihv28",
+    "author": "Polina Kocheva",
+    "page": "https://unsplash.com/photos/a-group-of-boats-floating-on-top-of-a-body-of-water-44LPPdihv28",
+    "raw": "https://images.unsplash.com/photo-1638085460989-f9f26db33840?ixid=NHwxMjA3fDA&ixlib=rb-4.1.0",
+    "size": "4496x3000",
+    "location": "Rawai Beach, Phuket, Thailand",
+    "description": null
+  },
+  "kata": {
+    "id": "pSQLxpYDh94",
+    "author": "Andre Mouton",
+    "page": "https://unsplash.com/photos/silhouette-of-trees-near-body-of-water-painting-pSQLxpYDh94",
+    "raw": "https://images.unsplash.com/photo-1533075429495-24b624e72cb7?ixid=NHwxMjA3fDA&ixlib=rb-4.1.0",
+    "size": "5908x3939",
+    "location": "Kata Beach, Karon, Thailand",
+    "description": "At one of my favorite beaches in Thailand. The golden sunset and boat out on the water…"
+  },
+  "naiharn": {
+    "id": "jBuf2eBg9I8",
+    "author": "Max Bvp",
+    "page": "https://unsplash.com/photos/a-view-of-the-ocean-from-a-hill-jBuf2eBg9I8",
+    "raw": "https://images.unsplash.com/photo-1737515908893-6b7f4b358d6d?ixid=NHwxMjA3fDA&ixlib=rb-4.1.0",
+    "size": "11766x8825",
+    "location": "Rawai, Mueang Phuket District, Phuket, Thailand",
+    "description": null,
+    "verified": "Location field says Rawai (the subdistrict of Nai Harn). The frame is Nai Harn bay from the hill road to Promthep: Nai Harn lake behind the beach, yachts on the anchorage, Koh Man island."
+  },
+  "pattaya": {
+    "id": "QayxhLotMvM",
+    "author": "Ryutaro Uozumi",
+    "page": "https://unsplash.com/photos/aerial-view-of-city-buildings-near-sea-during-daytime-QayxhLotMvM",
+    "raw": "https://images.unsplash.com/photo-1625492206717-61c584a8b11e?ixid=NHwxMjA3fDA&ixlib=rb-4.1.0",
+    "size": "5534x3689",
+    "location": "Pattaya Beach, Chon Buri, Thailand",
+    "description": "welcome to Pattaya, heaven on earth"
+  },
+  "bali": {
+    "id": "4euu6M6opno",
+    "author": "Alexandra Smielova",
+    "page": "https://unsplash.com/photos/a-scenic-view-of-the-ocean-and-a-cliff-4euu6M6opno",
+    "raw": "https://images.unsplash.com/photo-1636619306699-2d27a100605e?ixid=NHwxMjA3fDA&ixlib=rb-4.1.0",
+    "size": "4896x3264",
+    "location": "Uluwatu, Pecatu, Badung, Bali, Indonesia",
+    "description": "Uluwatu Temple View"
+  },
+  "villa": {
+    "id": "XtnNrQYC7ts",
+    "author": "big.tiny.belly",
+    "page": "https://unsplash.com/photos/infinity-pool-overlooking-blue-bay-XtnNrQYC7ts",
+    "raw": "https://images.unsplash.com/photo-1543489822-c49534f3271f?ixlib=rb-4.1.0",
+    "size": "3456x1944",
+    "location": "Samujana Villa, Koh Samui, Thailand",
+    "description": null
+  },
+  "dubai": {
+    "id": "6XlvCBOdkxI",
+    "author": "Jeffrey Francisco",
+    "page": "https://unsplash.com/photos/a-city-skyline-with-a-beach-and-water-6XlvCBOdkxI",
+    "raw": "https://images.unsplash.com/photo-1667587139742-e671d6cd2039?ixid=NHwxMjA3fDA&ixlib=rb-4.1.0",
+    "size": "4032x3024",
+    "location": "The Club – West Beach Palm Jumeirah, Dubai, United Arab Emirates",
+    "description": "West Beach The Palm Jumeirah"
+  },
+  "cambodia": {
+    "id": "Z1nxFBt9mfo",
+    "author": "Jules Nehlig",
+    "page": "https://unsplash.com/photos/a-beach-with-palm-trees-and-water-Z1nxFBt9mfo",
+    "raw": "https://images.unsplash.com/photo-1657027538728-0d4db32d87da?ixlib=rb-4.1.0",
+    "size": "4210x2807",
+    "location": "Koh Rong, Preah Sihanouk, Cambodia",
+    "description": null
+  },
+  "naiharnRocks": {
+    "id": "LRHbBae_6k0",
+    "author": "Aleksandr Galichkin",
+    "page": "https://unsplash.com/photos/aerial-view-of-a-tropical-beach-with-palm-trees-and-ocean-LRHbBae_6k0",
+    "raw": "https://images.unsplash.com/photo-1757489734258-b17a014a5c00?ixid=NHwxMjA3fDA&ixlib=rb-4.1.0",
+    "size": "4032x2268",
+    "location": "Nai Harn Beach, Rawai, Mueang Phuket District, Phuket, Thailand",
+    "description": null
+  },
+  "condo": {
+    "id": "nI4aC1kaTRc",
+    "author": "allPhoto Bangkok",
+    "page": "https://unsplash.com/photos/green-trees-near-swimming-pool-during-daytime-nI4aC1kaTRc",
+    "raw": "https://images.unsplash.com/photo-1580041065738-e72023775cdc?ixid=NHwxMjA3fDA&ixlib=rb-4.1.0",
+    "size": "6000x4000",
+    "location": "Hua Hin, Prachuap Khiri Khan, Thailand",
+    "description": null
+  },
+  "banana": {
+    "id": "C9tf2yNUm-o",
+    "author": "Max Bvp",
+    "page": "https://unsplash.com/photos/a-person-standing-on-a-rocky-beach-next-to-a-body-of-water-C9tf2yNUm-o",
+    "raw": "https://images.unsplash.com/photo-1737515994607-c95aae1c471a?ixlib=rb-4.1.0",
+    "size": "11759x8819",
+    "location": "Choeng Thale, Thalang District, Phuket 83110, Thailand",
+    "description": "Banana Phuket Thailand sea view"
+  },
+  "kamala": {
+    "id": "fShPggUL3LQ",
+    "author": "Max Bvp",
+    "page": "https://unsplash.com/photos/a-beautiful-beach-meets-a-green-lush-landscape-fShPggUL3LQ",
+    "raw": "https://images.unsplash.com/photo-1754295560016-450d6a38f2fd?ixlib=rb-4.1.0",
+    "size": "7008x4672",
+    "location": null,
+    "description": "Kamala Phuket Thailand sea view"
+  },
+  "house": {
+    "id": "HY2xcxQQ0FU",
+    "author": "Ronaldo Rizzutti",
+    "page": "https://unsplash.com/photos/a-modern-house-with-a-pool-in-the-yard-HY2xcxQQ0FU",
+    "raw": "https://images.unsplash.com/photo-1730382186479-20d2e2c4b58f?ixlib=rb-4.1.0",
+    "size": "4922x3260",
+    "location": null,
+    "description": null
+  }
+}
