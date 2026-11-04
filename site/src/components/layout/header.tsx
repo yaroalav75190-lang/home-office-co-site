@@ -234,6 +234,17 @@ export function Header({ destinationArt }: HeaderProps) {
       {!quiz ? (
         <>
           <div className="hidden xl:block">
+            {/* Dims the page under the open panel, so the panel's lower edge reads as a sheet over
+                the page instead of cutting through the hero button (QA). Purely visual: a click on
+                the page still lands outside the header and closes the panel. Positioned against the
+                header (its translate makes it the containing block even for `fixed`). */}
+            <div
+              aria-hidden="true"
+              className={clsx(
+                'pointer-events-none absolute inset-x-0 top-full -z-10 h-[100svh] bg-ink/35 transition-opacity duration-400',
+                panelOpen ? 'opacity-100' : 'opacity-0',
+              )}
+            />
             <DirectionsPanel id={panelId} open={panelOpen} onNavigate={() => closePanel(false)} art={destinationArt} />
           </div>
           <MenuDialog

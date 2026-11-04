@@ -35,9 +35,12 @@ function LenisBridge() {
     }
   }, [lenis])
 
-  // A new page starts at the top (keeps Lenis' own position in sync with the native one).
+  // A new page starts at the top (keeps Lenis' own position in sync with the native one) — unless
+  // the URL has an anchor: then the browser (direct load) or the page transition has already put
+  // the page there, and MotionRoot settles it after measuring.
   useEffect(() => {
-    lenis?.scrollTo(0, { immediate: true, force: true })
+    if (!lenis || window.location.hash) return
+    lenis.scrollTo(0, { immediate: true, force: true })
   }, [pathname, lenis])
 
   return null

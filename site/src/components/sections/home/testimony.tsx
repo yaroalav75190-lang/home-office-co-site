@@ -42,12 +42,11 @@ export function HomeInvest() {
             {investSection.quote}
           </p>
         </blockquote>
+        {/* The paragraph lives in the caption: <figcaption> must be the figure's first or last child (W3C). */}
         <figcaption data-reveal="fade" className="col-span-full mt-8 lg:col-span-4">
           <p className="type-ui">{investSection.author}</p>
+          <p className="type-body mt-8 max-w-[52ch]">{investSection.text}</p>
         </figcaption>
-        <p data-reveal="fade" className="type-body col-span-full mt-8 max-w-[52ch] lg:col-span-4">
-          {investSection.text}
-        </p>
       </figure>
     </section>
   )

@@ -86,9 +86,10 @@ export function Figure<K extends PhotoKey>({
     media = (
       <picture>
         <source media="(min-width: 48rem)" srcSet={desktopSrcSet} sizes={sizes} />
-        <source srcSet={mobileSrcSet} sizes={sizes} />
+        {/* The mobile crop lives on the <img> itself (srcSet + sizes): a second, media-less
+            <source> before an <img srcset> is invalid HTML, and so is `sizes` without `srcset` (W3C). */}
         {/* eslint-disable-next-line jsx-a11y/alt-text -- props come from getImageProps, alt included */}
-        <img {...rest} className={imgClasses} />
+        <img {...rest} srcSet={mobileSrcSet} className={imgClasses} />
       </picture>
     )
   } else {

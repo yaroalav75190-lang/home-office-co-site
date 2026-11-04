@@ -291,11 +291,14 @@ function pinnedScene(s: Scene): () => void {
 
   // The first district's photo wipes in as the stage reaches the viewport (the others wipe in
   // when their district activates).
+  // A guard instead of `once: true`, which kills the trigger inside a refresh (see ONCE in reveals.ts).
+  let firstWiped = false
   const first = ScrollTrigger.create({
     trigger: stage,
     start: 'top 85%',
-    once: true,
     onEnter: () => {
+      if (firstWiped) return
+      firstWiped = true
       if (active === 0) wipeIn(0)
     },
   })

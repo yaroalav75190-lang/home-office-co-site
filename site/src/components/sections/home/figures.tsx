@@ -17,7 +17,7 @@ const items: Stat[] = [
     text: 'время ответа брокера на заявку в рабочие часы',
     after: <ReplyTime variant="short" />,
   },
-  { value: '4', unit: 'страны', text: 'Таиланд, Бали, Дубай и Камбоджа' },
+  { value: '4', unit: 'страны', text: 'Таиланд, Индонезия (Бали), ОАЭ (Дубай) и Камбоджа' },
 ]
 
 /** Row of figures under the first screen (art-direction §6 «Главная» 2, §4 «Ряд цифр»). */

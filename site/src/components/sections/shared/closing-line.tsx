@@ -16,7 +16,7 @@ type ClosingLineProps = {
   title: string
   /** Optional primary button under the sentence, e.g. «Подобрать на Пхукете» → /podbor?country=phuket. */
   cta?: { label: string; href: string }
-  /** Extra Small line at the end of the contact column, e.g. the «Офиса нет…» line on the home page. */
+  /** Extra Small line at the end of the contact column, e.g. the «Встречаемся лично…» line on the home page. */
   note?: ReactNode
   className?: string
 }
