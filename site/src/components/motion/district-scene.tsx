@@ -33,6 +33,8 @@ export type DistrictSceneItem = {
   facts: { term: string; value: string }[]
   /** 3:2 photo; without it the block shows a 160 px locator (art-direction §4, §7). */
   photo?: PhotoKey
+  /** Caption for the photo in this district's words (a neighbouring beach says whose neighbour it is). */
+  photoCaption?: string
   /** District page, e.g. `/thailand/phuket/bang-tao`. */
   href?: string
   /** Link text for `href`. Default «{name} подробно» (copy-home §4: «Банг Тао подробно»). */
@@ -190,6 +192,7 @@ function DistrictPanel({ district: d }: { district: DistrictSceneItem }) {
                 photo={d.photo}
                 ratio="3x2"
                 sizes="(min-width: 64rem) 25vw, (min-width: 48rem) 50vw, 100vw"
+                caption={d.photoCaption}
                 locator={place ? <Locator place={place} /> : undefined}
               />
             ) : (

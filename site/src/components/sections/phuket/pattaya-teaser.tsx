@@ -7,7 +7,8 @@ const { pattaya } = phuketPage
 
 /**
  * Pattaya (art-direction §6 block 6): pattaya.jpg 3:2 in columns 1–7, the D3 line (an h2 by
- * markup), a sentence and the link in 9–12, standing on the photo's bottom edge.
+ * markup), a sentence and the link in 9–12, standing on the photo's bottom edge. A property photo
+ * 4:5 opens the right column: the city and what is bought in it.
  * Pattaya is not on Phuket, so its caption has no locator.
  */
 export function PattayaTeaser() {
@@ -22,6 +23,9 @@ export function PattayaTeaser() {
         />
       </div>
       <div data-reveal="fade" className="col-span-full md:col-span-6 lg:col-span-4 lg:col-start-9 lg:pb-10">
+        <div className="mb-10 w-2/3 lg:w-3/4">
+          <Figure photo="pattayaCondo" ratio="4x5" sizes="(min-width: 64rem) 20vw, 66vw" />
+        </div>
         <h2 id="pattaya-title" className="type-d3 max-w-[18ch]">
           {typo(pattaya.title)}
         </h2>

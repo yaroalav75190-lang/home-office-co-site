@@ -24,9 +24,18 @@ const media: Record<DestinationId, ReactNode> = {
   cambodia: <Figure photo="cambodia" ratio="4x5" mobileRatio="3x2" sizes="(min-width: 64rem) 25vw, 100vw" />,
 }
 
+/** A property next to the landscape in every row: what is bought there, not only where. */
+const property: Record<DestinationId, ReactNode> = {
+  phuket: <Figure photo="house" ratio="1x1" sizes="(min-width: 64rem) 16vw, 50vw" caption="Пример объекта: дом с бассейном" />,
+  bali: <Figure photo="baliVilla" ratio="1x1" sizes="(min-width: 64rem) 16vw, 50vw" />,
+  dubai: <Figure photo="dubaiHome" ratio="1x1" sizes="(min-width: 64rem) 16vw, 50vw" />,
+  cambodia: <Figure photo="cambodiaCondo" ratio="1x1" sizes="(min-width: 64rem) 16vw, 50vw" />,
+}
+
 /**
  * «Четыре побережья» (art-direction §6 «Главная» 3): one row per destination — name D2 (1–5),
- * the coastline 120 px (6–7), local time and verdict (8–9), photo (10–12). The whole row is the
+ * the coastline 120 px (6–7), local time, verdict and a property photo 1:1 (8–9), landscape
+ * photo (10–12). The whole row is the
  * link (stretched link from the h3, so the accessible name stays short); hover lays sand under it.
  * Planned destinations lead to the quiz with the country chosen (copy-global §2).
  */
@@ -74,6 +83,7 @@ export function HomeCoasts() {
                   <LocalTime timeZone={d.timeZone} /> {d.timeLabel}
                 </p>
                 <p className="type-body mt-3 max-w-[40ch]">{row.verdict}</p>
+                <div className="mt-8 w-1/2 md:w-2/3 lg:w-full">{property[row.id]}</div>
               </div>
 
               <div data-reveal="clip" className="col-span-full mt-8 md:col-span-5 lg:col-span-3 lg:col-start-10 lg:mt-0">

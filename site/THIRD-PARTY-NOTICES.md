@@ -121,3 +121,8 @@ Graded crops in `public/photos/graded/{key}-{ratio}.jpg`, made by `scripts/photo
 | naiharnRocks | Най Харн, юго-западное побережье Пхукета | Aleksandr Galichkin | Unsplash License | https://unsplash.com/photos/aerial-view-of-a-tropical-beach-with-palm-trees-and-ocean-LRHbBae_6k0 |
 | condo | Пример формата: кондоминиум с общим бассейном | allPhoto Bangkok | Unsplash License | https://unsplash.com/photos/green-trees-near-swimming-pool-during-daytime-nI4aC1kaTRc |
 | house | Пример формата: дом для жизни | Ronaldo Rizzutti | Unsplash License | https://unsplash.com/photos/a-modern-house-with-a-pool-in-the-yard-HY2xcxQQ0FU |
+| bigBuddha | Большой Будда на холме Наккерд, над Чалонгом и Катой | Aleksandr Galichkin | Unsplash License | https://unsplash.com/photos/large-white-buddha-statue-overlooking-tropical-island-landscape-uMDf0epSpjY |
+| baliVilla | Пример объекта: вилла с бассейном, Убуд, Бали | Nerissa J | Unsplash License | https://unsplash.com/photos/a-pool-with-lounge-chairs-and-umbrellas-next-to-it-4jpU5xBQFqA |
+| dubaiHome | Пример объекта: апартаменты в Дубай Марине | Nick Fewings | Unsplash License | https://unsplash.com/photos/city-buildings-near-in-ground-pool-during-daytime-_AXfP_W4fpU |
+| pattayaCondo | Пример объекта: кондоминиумы у моря, Паттайя | Kseniia Ilinykh | Unsplash License | https://unsplash.com/photos/city-skyline-under-white-sky-during-daytime-dUyZYo9s4sg |
+| cambodiaCondo | Пример объекта: жилой комплекс у моря, Сиануквиль | Sim Kimhort | Unsplash License | https://unsplash.com/photos/an-aerial-view-of-a-high-rise-building-next-to-the-ocean-wyeJRRBGq2s |

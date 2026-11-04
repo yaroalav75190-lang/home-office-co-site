@@ -115,8 +115,9 @@ export const PHOTOS = {
       // the boulders enter from the lower-left corner; the person on the rocks at the left edge
       // (x < 4 %) is cut.
       '21x9': { x: 0.04, y: 0.23, w: 0.96 },
-      // Spare 3:2. Full width, y 8–97 %.
-      '3x2': { x: 0, y: 0.08, w: 1 },
+      // Layan district row (and spare). x 4–100 %, y 10–95 %: the person on the rocks at the left
+      // edge is cut, as in the 21:9.
+      '3x2': { x: 0.04, y: 0.1, w: 0.96 },
     },
   },
 
@@ -306,6 +307,74 @@ export const PHOTOS = {
       '3x2': { x: 0, y: 0, h: 1 },
       // The living wing with the pool, x 28–81 %, full height.
       '4x5': { x: 0.28, y: 0, h: 1 },
+      // Home «Четыре побережья», Phuket row: the living wing and the pool, x 30–96 %.
+      '1x1': { x: 0.3, y: 0, h: 1 },
+    },
+  },
+
+  bigBuddha: {
+    // Big Buddha on Nakkerd hill, between Chalong and Kata (Unsplash, Aleksandr Galichkin; the
+    // location field says Karon, the statue's subdistrict). 2800×1575: the statue at x 37–42 % /
+    // y 33–58 %, the stairway and the terraces to the right, forested slopes below, the west coast
+    // and the sea on the horizon (y 25–30 %), hills top right.
+    file: 'unsplash/bigBuddha.jpg',
+    crops: {
+      // Chalong district row. Full height from x 6 %: the statue on the left third, the coast on
+      // the upper edge.
+      '3x2': { x: 0.06, y: 0, h: 1 },
+    },
+  },
+
+  baliVilla: {
+    // A villa in Ubud, Bali (Unsplash, Nerissa J). «Пример объекта». 2800×4198 portrait: an open
+    // glass pavilion under a pitched roof (y 20–50 %), umbrellas and loungers on the deck
+    // (y 50–70 %), the pool and its reflection below, foliage on the right edge.
+    file: 'unsplash/baliVilla.jpg',
+    crops: {
+      // Home Bali row. Full width, y 18–85 %: pavilion, deck and the first of the pool.
+      '1x1': { x: 0, y: 0.18, w: 1 },
+      // Spare 3:2. Full width, y 24–68 %.
+      '3x2': { x: 0, y: 0.24, w: 1 },
+    },
+  },
+
+  dubaiHome: {
+    // Residential towers of Dubai Marina from the pool deck of The Address (Unsplash, Nick
+    // Fewings). «Пример объекта». 2800×1867: towers across the frame (y 3–60 %), the infinity pool
+    // in the lower left, the marina canal on the right.
+    file: 'unsplash/dubaiHome.jpg',
+    crops: {
+      // Home Dubai row. Full height x 17–83 %: the tower cluster over the pool edge.
+      '1x1': { x: 0.17, y: 0, h: 1 },
+      // Full frame (by width: the source is a third of a pixel over 3:2).
+      '3x2': { x: 0, y: 0, w: 1 },
+    },
+  },
+
+  pattayaCondo: {
+    // Two condominium towers on the coast of Pattaya (Unsplash, Kseniia Ilinykh). «Пример
+    // объекта». 2800×4976 portrait: towers x 15–45 %, tops at y 24 %, bases at y 60 %, the sea and
+    // islands behind (horizon at 51 %), a low green district in the lower part.
+    file: 'unsplash/pattayaCondo.jpg',
+    crops: {
+      // Phuket page, Pattaya block. Full width, y 15–85 %: towers, the sea, the green district.
+      '4x5': { x: 0, y: 0.15, w: 1 },
+      // Spare 3:2. Full width, y 20–58 %.
+      '3x2': { x: 0, y: 0.2, w: 1 },
+    },
+  },
+
+  cambodiaCondo: {
+    // A residential tower on the shore of Sihanoukville, from the air (Unsplash, Sim Kimhort; the
+    // author's description names Sihanoukville). «Пример объекта». 2800×2800: the tower on the left
+    // (x 0–35 %, y 40–100 %), a second tower behind, a man-made peninsula and turquoise sea on the
+    // right, islands on the horizon (y 30 %).
+    file: 'unsplash/cambodiaCondo.jpg',
+    crops: {
+      // Home Cambodia row. Full frame.
+      '1x1': { x: 0, y: 0, w: 1 },
+      // Spare 3:2. Full width, y 20–87 %.
+      '3x2': { x: 0, y: 0.2, w: 1 },
     },
   },
 }
