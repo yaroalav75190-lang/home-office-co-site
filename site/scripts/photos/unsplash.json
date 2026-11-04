@@ -144,5 +144,50 @@
     "size": "4922x3260",
     "location": null,
     "description": null
+  },
+  "bigBuddha": {
+    "id": "uMDf0epSpjY",
+    "author": "Aleksandr Galichkin",
+    "page": "https://unsplash.com/photos/large-white-buddha-statue-overlooking-tropical-island-landscape-uMDf0epSpjY",
+    "raw": "https://images.unsplash.com/photo-1757489810231-79f028b674c2?ixlib=rb-4.1.0",
+    "size": "4032x2268",
+    "location": "Karon, Mueang Phuket District, Phuket, Thailand",
+    "description": "Big Buddha on Nakkerd hill, between Chalong and Kata/Karon"
+  },
+  "baliVilla": {
+    "id": "4jpU5xBQFqA",
+    "author": "Nerissa J",
+    "page": "https://unsplash.com/photos/a-pool-with-lounge-chairs-and-umbrellas-next-to-it-4jpU5xBQFqA",
+    "raw": "https://images.unsplash.com/photo-1675657144285-7daf131132de?ixlib=rb-4.1.0",
+    "size": "2582x3871",
+    "location": "Ubud, Gianyar Regency, Bali, Indonesia",
+    "description": null
+  },
+  "dubaiHome": {
+    "id": "_AXfP_W4fpU",
+    "author": "Nick Fewings",
+    "page": "https://unsplash.com/photos/city-buildings-near-in-ground-pool-during-daytime-_AXfP_W4fpU",
+    "raw": "https://images.unsplash.com/photo-1524234599372-a5bd0194758d?ixlib=rb-4.1.0",
+    "size": "5472x3648",
+    "location": "The Address Dubai Marina, Dubai, United Arab Emirates",
+    "description": "The view from the pool deck of The Address, Dubai Marina"
+  },
+  "pattayaCondo": {
+    "id": "dUyZYo9s4sg",
+    "author": "Kseniia Ilinykh",
+    "page": "https://unsplash.com/photos/city-skyline-under-white-sky-during-daytime-dUyZYo9s4sg",
+    "raw": "https://images.unsplash.com/photo-1584695930341-e3c68ddb1924?ixlib=rb-4.1.0",
+    "size": "3355x5962",
+    "location": "Pattaya, Banglamung, Chonburi, Thailand",
+    "description": "Skyscrapers in Thailand"
+  },
+  "cambodiaCondo": {
+    "id": "wyeJRRBGq2s",
+    "author": "Sim Kimhort",
+    "page": "https://unsplash.com/photos/an-aerial-view-of-a-high-rise-building-next-to-the-ocean-wyeJRRBGq2s",
+    "raw": "https://images.unsplash.com/photo-1736348597284-00376d926c46?ixlib=rb-4.1.0",
+    "size": "3392x3392",
+    "location": null,
+    "description": "Description: «ក្រុងព្រះសីហនុ, ខេត្តព្រះសីហនុ, PreahSihanouk, Sihanoukville»"
   }
 }

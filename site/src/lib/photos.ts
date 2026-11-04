@@ -40,6 +40,11 @@ export type PhotoKey =
   | 'naiharnRocks'
   | 'condo'
   | 'house'
+  | 'bigBuddha'
+  | 'baliVilla'
+  | 'dubaiHome'
+  | 'pattayaCondo'
+  | 'cambodiaCondo'
 
 export type Ratio = '21x9' | '3x2' | '4x5' | '1x1'
 
@@ -133,6 +138,26 @@ const graded = {
   house: {
     '3x2': { src: '/photos/graded/house-3x2.jpg', width: 2400, height: 1600 },
     '4x5': { src: '/photos/graded/house-4x5.jpg', width: 1484, height: 1855 },
+    '1x1': { src: '/photos/graded/house-1x1.jpg', width: 1855, height: 1855 },
+  },
+  bigBuddha: {
+    '3x2': { src: '/photos/graded/bigBuddha-3x2.jpg', width: 2363, height: 1575 },
+  },
+  baliVilla: {
+    '3x2': { src: '/photos/graded/baliVilla-3x2.jpg', width: 2400, height: 1600 },
+    '1x1': { src: '/photos/graded/baliVilla-1x1.jpg', width: 2400, height: 2400 },
+  },
+  dubaiHome: {
+    '3x2': { src: '/photos/graded/dubaiHome-3x2.jpg', width: 2400, height: 1600 },
+    '1x1': { src: '/photos/graded/dubaiHome-1x1.jpg', width: 1867, height: 1867 },
+  },
+  pattayaCondo: {
+    '3x2': { src: '/photos/graded/pattayaCondo-3x2.jpg', width: 2400, height: 1600 },
+    '4x5': { src: '/photos/graded/pattayaCondo-4x5.jpg', width: 1920, height: 2400 },
+  },
+  cambodiaCondo: {
+    '3x2': { src: '/photos/graded/cambodiaCondo-3x2.jpg', width: 2400, height: 1600 },
+    '1x1': { src: '/photos/graded/cambodiaCondo-1x1.jpg', width: 2400, height: 2400 },
   },
 } as const satisfies Record<PhotoKey, Partial<Record<Ratio, PhotoAsset>>>
 // </generated:photos>
@@ -325,6 +350,51 @@ export const photoMeta = {
     license: UNSPLASH,
     sourceUrl: 'https://unsplash.com/photos/a-modern-house-with-a-pool-in-the-yard-HY2xcxQQ0FU',
   },
+  bigBuddha: {
+    // Location field: Karon (the statue's subdistrict); Nakkerd hill rises between Chalong and Kata.
+    alt: 'Большой Будда на холме Наккерд: белая статуя над лесистыми склонами, внизу побережье и море',
+    caption: 'Большой Будда на холме Наккерд, над Чалонгом и Катой',
+    place: null,
+    credit: 'Aleksandr Galichkin',
+    license: UNSPLASH,
+    sourceUrl: 'https://unsplash.com/photos/large-white-buddha-statue-overlooking-tropical-island-landscape-uMDf0epSpjY',
+  },
+  baliVilla: {
+    // Location: Ubud, Gianyar, Bali. An example of the format, not a client property.
+    alt: 'Вилла в Убуде: стеклянный павильон под скатной крышей, шезлонги и зонты на террасе у бассейна, тропическая зелень',
+    caption: 'Пример объекта: вилла с бассейном, Убуд, Бали',
+    place: null,
+    credit: 'Nerissa J',
+    license: UNSPLASH,
+    sourceUrl: 'https://unsplash.com/photos/a-pool-with-lounge-chairs-and-umbrellas-next-to-it-4jpU5xBQFqA',
+  },
+  dubaiHome: {
+    // Location: The Address Dubai Marina. An example of the format, not a client property.
+    alt: 'Жилые башни Дубай Марины с террасы с бассейном: небоскрёбы над каналом с яхтами',
+    caption: 'Пример объекта: апартаменты в Дубай Марине',
+    place: null,
+    credit: 'Nick Fewings',
+    license: UNSPLASH,
+    sourceUrl: 'https://unsplash.com/photos/city-buildings-near-in-ground-pool-during-daytime-_AXfP_W4fpU',
+  },
+  pattayaCondo: {
+    // Location: Pattaya, Banglamung, Chonburi. An example of the format, not a client property.
+    alt: 'Две высотные башни кондоминиумов у моря в Паттайе, внизу зелёный квартал, на горизонте острова',
+    caption: 'Пример объекта: кондоминиумы у моря, Паттайя',
+    place: null,
+    credit: 'Kseniia Ilinykh',
+    license: UNSPLASH,
+    sourceUrl: 'https://unsplash.com/photos/city-skyline-under-white-sky-during-daytime-dUyZYo9s4sg',
+  },
+  cambodiaCondo: {
+    // The author's description names Sihanoukville. An example of the format, not a client property.
+    alt: 'Высотный жилой комплекс на берегу в Сиануквиле с высоты: башня у пляжа, бирюзовое море, насыпной полуостров',
+    caption: 'Пример объекта: жилой комплекс у моря, Сиануквиль',
+    place: null,
+    credit: 'Sim Kimhort',
+    license: UNSPLASH,
+    sourceUrl: 'https://unsplash.com/photos/an-aerial-view-of-a-high-rise-building-next-to-the-ocean-wyeJRRBGq2s',
+  },
 } as const satisfies Record<PhotoKey, PhotoMeta>
 
 export type Credit = {
@@ -365,6 +435,11 @@ const ORDER: PhotoKey[] = [
   'villa',
   'condo',
   'house',
+  'bigBuddha',
+  'baliVilla',
+  'dubaiHome',
+  'pattayaCondo',
+  'cambodiaCondo',
 ]
 
 /** Rows for the /credits page, in site order. */

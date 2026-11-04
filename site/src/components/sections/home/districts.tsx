@@ -36,6 +36,7 @@ const districts: DistrictSceneItem[] = hubDistricts.map((d) => ({
     { term: buy, value: afterLabel(d.facts[1], 'Покупают') },
   ],
   photo: d.photo?.key,
+  photoCaption: d.photo?.caption,
   // Only a district with its own page links out; the scene labels it «{name} подробно»
   // («Банг Тао подробно», copy-home §4).
   href: d.page ? districtHref(d) : undefined,
