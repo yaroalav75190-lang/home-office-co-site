@@ -82,7 +82,10 @@ export function drawCoast(svg: SVGSVGElement, opts: DrawOptions = {}): () => voi
   }
 
   const tl = gsap.timeline({
-    scrollTrigger: opts.immediate ? undefined : { trigger: svg, start: opts.start ?? 'top 85%', once: true },
+    // Play once, never reverse; not `once: true` (see ONCE in reveals.ts: self-kill during refresh).
+    scrollTrigger: opts.immediate
+      ? undefined
+      : { trigger: svg, start: opts.start ?? 'top 85%', toggleActions: 'play none none none' },
     onComplete: restore,
   })
   tl.to(paths, { strokeDashoffset: 0, duration, ease: ease.line })

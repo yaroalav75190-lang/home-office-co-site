@@ -38,9 +38,9 @@ function Layer({ photo, alt, priority }: { photo: PhotoKey; alt: string; priorit
   return (
     <picture>
       <source media="(min-width: 64rem)" srcSet={desktopSrcSet} sizes={SIZES} />
-      <source srcSet={mobileSrcSet} sizes={SIZES} />
+      {/* The mobile crop lives on the <img> (srcSet + sizes): valid HTML, same choice as ui/figure. */}
       {/* eslint-disable-next-line jsx-a11y/alt-text -- alt comes from getImageProps */}
-      <img {...rest} className="object-cover" />
+      <img {...rest} srcSet={mobileSrcSet} className="object-cover" />
     </picture>
   )
 }

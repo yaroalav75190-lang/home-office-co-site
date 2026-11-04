@@ -124,7 +124,12 @@ export function GuideForm({ className }: { className?: string }) {
   /** «Заявка не отправлена. Исправьте поля: …» for errors found here or returned by the server. */
   const summaryOf = (found: FieldErrors) =>
     (Object.keys(found) as LeadFieldName[]).map((key) => ({
-      label: key === 'contact' && channel ? contactLabels[channel] : fieldLabel(key, channel || undefined),
+      label:
+        key === 'channel'
+          ? 'Куда прислать гид'
+          : key === 'contact' && channel
+            ? contactLabels[channel]
+            : fieldLabel(key, channel || undefined),
       targetId: ids[key as keyof typeof ids] ?? ids.name,
     }))
 

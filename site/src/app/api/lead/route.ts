@@ -85,8 +85,9 @@ export async function POST(request: NextRequest) {
     log(400, { error: 'unreadable_body' })
     return reply(400, { ok: false, error: 'bad_request' })
   }
-  if (raw.length > MAX_BODY) {
-    log(400, { error: 'body_too_large', size: raw.length })
+  const size = Buffer.byteLength(raw, 'utf8')
+  if (size > MAX_BODY) {
+    log(400, { error: 'body_too_large', size })
     return reply(400, { ok: false, error: 'bad_request' })
   }
   let body: unknown

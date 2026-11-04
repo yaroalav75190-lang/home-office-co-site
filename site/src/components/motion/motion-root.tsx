@@ -28,6 +28,7 @@ import { gsap, ScrollTrigger, useGSAP } from '@/lib/gsap'
 import { drawCoast, drawLocator } from './coast-draw'
 import { heroScrub } from './hero-scrub'
 import { watchLateNodes } from './late-nodes'
+import { scrollToY } from './lenis-ref'
 import { FIGURE, PANORAMA, parallax } from './parallax'
 import {
   hideClip,
@@ -122,6 +123,21 @@ function apply(scan: Scan, ctx: gsap.Context, immediate = false): (() => void)[]
   scan.coasts.forEach((svg) => cleanups.push(drawCoast(svg, { immediate })))
   scan.locators.forEach((svg) => cleanups.push(drawLocator(svg, { immediate })))
   return cleanups
+}
+
+/**
+ * A URL with an anchor (/#gid, /contacts#zapis, the skip link's /#main after a reload) lands on
+ * its target once the triggers are measured: the browser's own jump happens before hydration,
+ * and Lenis or a late layout pass can leave the page short of it. The header height comes from
+ * `scroll-padding-top` (globals.css), the same offset in-page anchor links use.
+ */
+function landOnHash() {
+  const id = decodeURIComponent(window.location.hash.slice(1))
+  if (!id) return
+  const target = document.getElementById(id)
+  if (!target) return
+  const header = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0
+  scrollToY(Math.max(0, target.getBoundingClientRect().top + window.scrollY - header), { immediate: true })
 }
 
 export function MotionRoot() {
@@ -234,6 +250,7 @@ export function MotionRoot() {
       // put every trigger in page order before measuring (pins push the ones below them).
       ScrollTrigger.sort()
       ScrollTrigger.refresh()
+      landOnHash()
 
       // Re-measure once late layout changes land: the web-font swap and the window load (photo
       // boxes reserve their ratio, so lazy images loading during the scroll need no refresh).

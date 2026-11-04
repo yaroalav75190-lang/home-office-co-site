@@ -34,7 +34,7 @@ export default function CreditsPage() {
           Авторы фото и данных карт
         </h1>
         <p className="type-lead col-span-full mt-8 max-w-[48ch] lg:col-span-6">
-          Фотографии взяты с Unsplash, три снимка Банг Тао — с Wikimedia Commons. Мы кадрируем их и меняем цвет,
+          Фотографии взяты с Unsplash, два снимка Банг Тао — с Wikimedia Commons. Мы кадрируем их и меняем цвет,
           авторы и лицензии указаны ниже.
         </p>
       </section>

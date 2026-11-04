@@ -19,6 +19,8 @@ export function getLenis(): Lenis | null {
 export function scrollToY(y: number, opts: { immediate?: boolean; duration?: number } = {}) {
   const lenis = current
   if (lenis) {
+    // The page may have grown since Lenis last measured it (a route change, late layout).
+    lenis.resize()
     lenis.scrollTo(y, { immediate: opts.immediate, duration: opts.duration ?? 1.1, force: true, lock: false })
     return
   }

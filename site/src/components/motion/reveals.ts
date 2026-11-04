@@ -17,6 +17,15 @@ import { dur, ease, step } from './tokens'
 /** Trigger point of every reveal: the element's top at 85 % of the viewport height. */
 export const START = 'top 85%'
 
+/**
+ * Play once on entering and never reverse — instead of `once: true`. A `once` trigger kills
+ * itself inside ScrollTrigger.refresh() when the page is already scrolled past it (a direct load
+ * of /#gid, a reload mid-page), which shrinks GSAP's trigger list while a pinned trigger is
+ * walking it: «Cannot read properties of undefined (reading 'end')» and the whole page fell to
+ * the error screen. These triggers stay alive (cheap) and do the same thing on screen.
+ */
+export const ONCE = { start: START, toggleActions: 'play none none none' } as const
+
 /** The clip box of a figure wrapper (the caption stays put), or the element itself. */
 export function mediaBox(el: HTMLElement): HTMLElement {
   return el.querySelector<HTMLElement>('[data-figure-media]') ?? el
@@ -59,7 +68,7 @@ export function revealFade(el: HTMLElement) {
       delay: 0.15,
       ease: ease.out,
       clearProps: 'transform',
-      scrollTrigger: { trigger: el, start: START, once: true },
+      scrollTrigger: { trigger: el, ...ONCE },
     },
   )
 }
@@ -78,7 +87,7 @@ export function revealItems(el: HTMLElement) {
       ease: ease.out,
       stagger: step.items,
       clearProps: 'transform',
-      scrollTrigger: { trigger: el, start: START, once: true },
+      scrollTrigger: { trigger: el, ...ONCE },
     },
   )
 }
@@ -92,7 +101,7 @@ export function revealClip(el: HTMLElement) {
   const box = mediaBox(el)
   const img = box.querySelector<HTMLElement>('img, video')
   const base = (img && Number(img.dataset.motionScale)) || 1
-  const tl = gsap.timeline({ scrollTrigger: { trigger: box, start: START, once: true } })
+  const tl = gsap.timeline({ scrollTrigger: { trigger: box, ...ONCE } })
   tl.fromTo(
     box,
     { clipPath: 'inset(100% 0% 0% 0%)' },
@@ -118,7 +127,7 @@ export function revealSurface(el: HTMLElement) {
       duration: dur.photo,
       ease: ease.line,
       clearProps: 'clipPath',
-      scrollTrigger: { trigger: el, start: START, once: true },
+      scrollTrigger: { trigger: el, ...ONCE },
     },
   )
 }
@@ -142,6 +151,10 @@ export function revealLines(el: HTMLElement, ctx: gsap.Context): () => void {
         type: 'lines',
         mask: 'lines',
         autoSplit: true,
+        // Lines keep whole words, so the split text reads correctly as it is. The default 'auto'
+        // puts aria-label on the element, which is not allowed on <p> and <h2> without a role
+        // (Lighthouse/axe «aria-prohibited-attr»).
+        aria: 'none',
         onSplit(self) {
           gsap.set(el, { opacity: 1 })
           return gsap.from(self.lines, {
@@ -149,7 +162,7 @@ export function revealLines(el: HTMLElement, ctx: gsap.Context): () => void {
             duration: dur.lines,
             ease: ease.out,
             stagger: step.lines,
-            scrollTrigger: { trigger: el, start: START, once: true },
+            scrollTrigger: { trigger: el, ...ONCE },
             onComplete: () => {
               // Back to the original markup: native wrapping, selection and find-in-page.
               self.kill()

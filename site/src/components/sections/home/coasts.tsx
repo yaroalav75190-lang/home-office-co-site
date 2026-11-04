@@ -53,8 +53,11 @@ export function HomeCoasts() {
               )}
             >
               <h3 className="type-d2 col-span-3 md:col-span-6 lg:col-span-5">
-                <Link href={href} aria-label={label} className="after:absolute after:inset-0 after:z-10">
+                {/* The accessible name starts with the visible name (WCAG 2.5.3 «label in name»):
+                    a screen reader hears «Дубай, Подобрать в Дубае», a voice user can say «Дубай». */}
+                <Link href={href} className="after:absolute after:inset-0 after:z-10">
                   {row.name}
+                  {label ? <span className="sr-only">, {label}</span> : null}
                 </Link>
               </h3>
 

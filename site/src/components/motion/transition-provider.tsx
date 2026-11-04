@@ -160,6 +160,11 @@ export function TransitionProvider({ art, children }: TransitionProviderProps) {
       // New page at the top, or at its anchor, before the panel lifts.
       const anchor = target.hash ? document.getElementById(decodeURIComponent(target.hash.slice(1))) : null
       const current = getLenis()
+      // Lenis still holds the previous page's scroll limit: a shorter page before a longer one
+      // clamped /#gid 3 800 px short of the guide (QA). Re-measure before scrolling.
+      current?.resize()
+      // Measure the anchor without the leave offset (main is still at y −60, invisible).
+      gsap.set(main, { y: 0 })
       if (anchor) {
         const header = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0
         const y = anchor.getBoundingClientRect().top + window.scrollY - header

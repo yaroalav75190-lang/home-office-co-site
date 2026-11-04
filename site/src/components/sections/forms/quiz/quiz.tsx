@@ -467,7 +467,9 @@ function QuestionStepView({
       </div>
       <p id={hintId} className="type-small mt-6 text-ink-muted">
         После выбора сразу откроется следующий вопрос
-        <span className="hidden lg:inline [@media(hover:none)]:hidden">. С клавиатуры: стрелки или 1–6, Enter — дальше</span>
+        <span className="hidden lg:inline [@media(hover:none)]:hidden">
+          . С клавиатуры: стрелки или 1–{q.options.length}, Enter — дальше
+        </span>
       </p>
       <p className="type-small mt-1 text-ink-muted">Отвечает брокер лично. Пишем только в выбранный канал</p>
       {showBack ? <BackButton onClick={onBack} /> : null}

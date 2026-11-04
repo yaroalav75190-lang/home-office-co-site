@@ -95,6 +95,9 @@ export function BookingForm({ kind, page }: { kind: Kind; page: string }) {
       delete next[field]
       return next
     })
+    // The summary lists what is still wrong: a fixed or removed field (e.g. «Направление» after
+    // choosing a viewing) leaves it too.
+    setSummary((prev) => prev.filter((item) => item.targetId !== targetId(field)))
   }
 
   const targetId = (field: LeadFieldName) => `${p}-${field}`
