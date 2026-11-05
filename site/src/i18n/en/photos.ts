@@ -6,8 +6,8 @@ import type { PhotosDict, PhotoCreditsDict } from '../ru/photos'
 
 export const photos = {
   hero: {
-    alt: 'Aerial view of a long Phuket beach: an arc of white sand between casuarina trees and shallow turquoise water, boats at anchor, a sandbar in the distance',
-    caption: 'West coast of Phuket',
+    alt: 'A bay from above: villas with pools in a green garden, a crescent of white beach with a long pier, turquoise water and rocky headlands',
+    caption: 'Example format: villas by a bay, Thailand',
   },
   phuket: {
     alt: 'Ya Nui Bay from a viewpoint: a wooded headland, a small island opposite, a small beach and a yacht at anchor',

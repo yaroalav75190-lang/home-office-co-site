@@ -204,11 +204,12 @@ const LICENSE_URL: Record<string, string | null> = {
  */
 export const photoMeta = {
   hero: {
-    // Tags: phuket, thai beach; no location field. A west-coast beach (shallow water, casuarinas).
+    // Tags: thailand, private villa, luxury resort; no location field, so no place is named
+    // («Пример формата»). Checked as a free photo (not Unsplash+) on 5 November 2026.
     place: null,
     credit: 'Antonio Araujo',
     license: UNSPLASH,
-    sourceUrl: 'https://unsplash.com/photos/a-birds-eye-view-of-a-beach-and-ocean-6yBdFYernH8',
+    sourceUrl: 'https://unsplash.com/photos/a-birds-eye-view-of-a-beach-and-resort-FGICco5i988',
   },
   phuket: {
     // Location: Ya Nui, Rawai, Phuket. No locator: Ya Nui has no point of its own.

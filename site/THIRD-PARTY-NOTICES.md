@@ -105,7 +105,7 @@ Graded crops in `public/photos/graded/{key}-{ratio}.jpg`, made by `scripts/photo
 
 | Key | Caption on the site | Author | License | Source |
 | --- | --- | --- | --- | --- |
-| hero | Западное побережье Пхукета | Antonio Araujo | Unsplash License | https://unsplash.com/photos/a-birds-eye-view-of-a-beach-and-ocean-6yBdFYernH8 |
+| hero | Пример формата: виллы у бухты, Таиланд | Antonio Araujo | Unsplash License | https://unsplash.com/photos/a-birds-eye-view-of-a-beach-and-resort-FGICco5i988 |
 | phuket | Я Нуи, юго-западное побережье Пхукета | Polina Kocheva | Unsplash License | https://unsplash.com/photos/a-body-of-water-surrounded-by-lush-green-trees-peQvWjjNPwo |
 | bangtao | Банг Тао, западное побережье Пхукета | Raita Futo | CC BY 2.0 | https://commons.wikimedia.org/wiki/File:Bang_Tao_Beach_(53667853591).jpg |
 | sunset | Закат на Банг Тао, западное побережье Пхукета | Anton Zelenov | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Sunset_at_Bang_Tao_beach_-_01.jpg |

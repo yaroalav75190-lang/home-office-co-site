@@ -6,8 +6,8 @@ import type { PhotosDict, PhotoCreditsDict } from '../ru/photos'
 
 export const photos = {
   hero: {
-    alt: 'Larga playa de Phuket desde el aire: un arco de arena blanca entre casuarinas y agua turquesa poco profunda, barcos fondeados y un banco de arena a lo lejos',
-    caption: 'Costa oeste de Phuket',
+    alt: 'Una bahía desde el aire: villas con piscina en un jardín verde, una media luna de playa blanca con un largo muelle, agua turquesa y cabos rocosos',
+    caption: 'Ejemplo de formato: villas junto a una bahía, Tailandia',
   },
   phuket: {
     alt: 'Bahía de Ya Nui desde un mirador: un cabo boscoso, un islote enfrente, una pequeña playa y un yate fondeado',
