@@ -25,6 +25,7 @@ export function LiveLine({
   className?: string
 }) {
   const state = useReplyState()
+  // `render` reads the page's words from its caller; `fallback` is the no-JS line.
   let text = fallback
   if (state) {
     try {

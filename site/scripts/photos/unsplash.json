@@ -1,13 +1,13 @@
 {
   "_note": "Sources of photos-src/unsplash/*.jpg (outside public/, never served). bangtao and sunset are not used: the site shows the Wikimedia photos of Bang Tao from photos-src/wikimedia. Picked 3 Nov 2026 from unsplash.com search (premium/plus results excluded; every pick re-checked: free photo). Unsplash License, https://unsplash.com/license. `location` is the Unsplash location field (contentLocation) or the author's tags, verbatim. Fetch: node scripts/photos/fetch-unsplash.mjs",
   "hero": {
-    "id": "6yBdFYernH8",
+    "id": "FGICco5i988",
     "author": "Antonio Araujo",
-    "page": "https://unsplash.com/photos/a-birds-eye-view-of-a-beach-and-ocean-6yBdFYernH8",
-    "raw": "https://images.unsplash.com/photo-1729719022551-50b5f52792c0?ixlib=rb-4.1.0",
+    "page": "https://unsplash.com/photos/a-birds-eye-view-of-a-beach-and-resort-FGICco5i988",
+    "raw": "https://images.unsplash.com/photo-1729708790927-d14be7384d10?ixlib=rb-4.1.0",
     "size": "5464x3640",
     "location": null,
-    "description": "Tags: phuket, beach life, thailand phuket, thai beach"
+    "description": "Tags: thailand, luxury resort, private villa, private beach, private island. Replaced 5 Nov 2026 the overcast beach 6yBdFYernH8 (owner: the first screen looked empty)"
   },
   "phuket": {
     "id": "peQvWjjNPwo",

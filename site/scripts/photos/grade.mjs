@@ -52,18 +52,19 @@ export const LIGHT = { saturation: 0.93, bands: 0.5 }
  * ----------------------------------------------------------------------------------------- */
 export const PHOTOS = {
   hero: {
-    // A long beach from above, Phuket (Unsplash, Antonio Araujo; tagged phuket, no exact place).
-    // 2800×1865: the beach arc runs from the lower-left corner to a sandbar at the top right
-    // (x 72–92 %, y 12–20 %), casuarinas and a resort garden fill the lower right, boats on
-    // shallow water, open sea top-left. No people visible at any size.
+    // A bay with villas, straight down (Unsplash, Antonio Araujo; tagged thailand, private villa,
+    // no location: the caption says «Пример формата»). 2800×1865, bright noon light: villas with
+    // pools in a garden on the left (x 0–35 %), a white crescent beach with a long pier
+    // (x 35–55 %), turquoise water to the right, rocky green headlands top and bottom right.
+    // No people visible at any size.
     file: 'unsplash/hero.jpg',
     crops: {
-      // Home panorama. Full width, y 17–81 %: the arc crosses the frame as a diagonal, the
-      // sandbar closes the top-right corner, the roofs along the bottom edge are cut.
-      '21x9': { x: 0, y: 0.17, w: 1 },
-      // Mobile hero. Full height from x 40 %: the right half of the arc, the sandbar at the top,
-      // the casuarina belt as the base.
-      '4x5': { x: 0.4, y: 0, h: 1 },
+      // Home panorama. Full width, y 18–82 %: villas, the beach and the pier, the water with
+      // two boats; both headlands touch the right edge.
+      '21x9': { x: 0, y: 0.18, w: 1 },
+      // Mobile hero. Full height from x 25 %: the main building and villas on the left, the
+      // whole crescent with the pier, turquoise water on the right.
+      '4x5': { x: 0.25, y: 0, h: 1 },
       // Cards / OG. Full frame (by height: the source is two pixels short of 3:2 by width).
       '3x2': { x: 0, y: 0, h: 1 },
     },

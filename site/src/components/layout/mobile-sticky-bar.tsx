@@ -9,6 +9,7 @@
 import { clsx } from 'clsx'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useLocale } from '@/i18n/client'
 import { contacts, primaryCta } from '@/lib/site'
 import { Button } from '@/components/ui/button'
 import { PhoneIcon, TelegramIcon, WhatsAppIcon } from '@/components/ui/icons'
@@ -31,6 +32,7 @@ const subscribeFits = (onChange: () => void) => {
 export function MobileStickyBar() {
   const pathname = usePathname()
   const quiz = isQuizPath(pathname)
+  const { t } = useLocale()
   const fits = useSyncExternalStore(subscribeFits, () => window.matchMedia(FITS_QUERY).matches, () => false)
   const [pastHero, setPastHero] = useState(false)
   const [blocked, setBlocked] = useState(false)
@@ -114,7 +116,7 @@ export function MobileStickyBar() {
   return (
     <div
       role="region"
-      aria-label="Быстрая связь"
+      aria-label={t.common.stickyBar.label}
       data-surface="ink"
       data-sticky-bar=""
       inert={!visible}
@@ -129,7 +131,7 @@ export function MobileStickyBar() {
           href={contacts.telegram.href}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label={contacts.telegram.action}
+          aria-label={t.common.channels.telegram.action}
           className={iconLink}
         >
           <TelegramIcon />
@@ -138,16 +140,16 @@ export function MobileStickyBar() {
           href={contacts.whatsapp.href}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label={contacts.whatsapp.action}
+          aria-label={t.common.channels.whatsapp.action}
           className={iconLink}
         >
           <WhatsAppIcon />
         </a>
-        <a href={contacts.phone.href} aria-label={contacts.phone.action} className={iconLink}>
+        <a href={contacts.phone.href} aria-label={t.common.channels.phone.action} className={iconLink}>
           <PhoneIcon />
         </a>
         <Button href={primaryCta.href} variant="inverse" size="compact" className="ml-1 min-w-0 flex-1 max-[22.5rem]:px-2">
-          {primaryCta.label}
+          {t.common.nav[primaryCta.id]}
         </Button>
       </div>
     </div>

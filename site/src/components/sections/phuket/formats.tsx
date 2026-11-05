@@ -3,10 +3,12 @@ import { StubNote, splitStubs } from '@/components/sections/shared/stub'
 import { Figure } from '@/components/ui/figure'
 import { SectionHeading } from '@/components/ui/section-heading'
 import { TextLink } from '@/components/ui/text-link'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
 import { type PhotoKey, type PhotoRatio, type Ratio, photoRatios } from '@/lib/photos'
 import { Rich, typo } from './text'
 
-/** One format card (copy: `formats` in ./content). */
+/** One format card (facts: `formats` in ./content; words: `phuket.formats.items` in the dictionary). */
 export type FormatItem = {
   id: string
   title: string
@@ -22,8 +24,8 @@ export type FormatItem = {
   caption: string
 }
 
-/** Section copy (copy: `formatsHeading` in ./content). Only `title` is required; the CTA's href
- * comes from the page (`href` prop), so a district page links to its own quiz. */
+/** Section copy (`formatsContent` in ./content builds it from the dictionary). Only `title` is required;
+ * the CTA's href comes from the page (`href` prop), so a district page links to its own quiz. */
 export type FormatsHeading = {
   title: string
   lead?: string
@@ -33,6 +35,7 @@ export type FormatsHeading = {
 }
 
 type FormatsProps = {
+  locale: Locale
   id: string
   heading: FormatsHeading
   items: readonly FormatItem[]
@@ -96,7 +99,8 @@ function cropFor(photo: PhotoKey, wanted: FormatItem['ratio']): Ratio {
  * hand-over dates are invented. Each card: Figure with «Пример формата» under the photo, title D3,
  * a Body sentence, the kind of title and who it suits as Small facts. No badges or carousels.
  */
-export function Formats({ id, heading, items, href }: FormatsProps) {
+export function Formats({ locale, id, heading, items, href }: FormatsProps) {
+  const t = getDictionary(locale).phuket
   const slots = placeCards(items)
   const title = splitStubs(heading.title)
 
@@ -104,8 +108,8 @@ export function Formats({ id, heading, items, href }: FormatsProps) {
     <section aria-labelledby={id} className="grid-site pt-section">
       <SectionHeading
         id={id}
-        title={typo(title.text)}
-        lead={heading.lead ? <Rich text={heading.lead} /> : undefined}
+        title={typo(title.text, locale)}
+        lead={heading.lead ? <Rich text={heading.lead} locale={locale} /> : undefined}
         reveal
       />
       {title.notes.length ? <StubNote notes={title.notes} className="col-span-full" /> : null}
@@ -128,6 +132,7 @@ export function Formats({ id, heading, items, href }: FormatsProps) {
             >
               <div data-reveal="clip">
                 <Figure
+                  locale={locale}
                   photo={item.photo}
                   ratio={crop as PhotoRatio<typeof item.photo>}
                   sizes={
@@ -135,26 +140,26 @@ export function Formats({ id, heading, items, href }: FormatsProps) {
                       ? '(min-width: 64rem) 58vw, (min-width: 48rem) 75vw, 100vw'
                       : '(min-width: 64rem) 42vw, (min-width: 48rem) 62vw, 100vw'
                   }
-                  caption={typo(item.caption)}
+                  caption={typo(item.caption, locale)}
                 />
               </div>
               <div data-reveal="fade" className="mt-6 lg:mt-8">
-                <h3 className="type-d3 max-w-[20ch]">{typo(name.text)}</h3>
+                <h3 className="type-d3 max-w-[20ch]">{typo(name.text, locale)}</h3>
                 <StubNote notes={name.notes} />
                 <p className="type-body mt-4 max-w-[44ch]">
-                  <Rich text={item.text} />
+                  <Rich text={item.text} locale={locale} />
                 </p>
                 <dl className="type-small mt-6 flex max-w-[44ch] flex-col gap-3">
                   <div>
-                    <dt className="text-ink-muted">Право собственности</dt>
+                    <dt className="text-ink-muted">{t.formats.ownershipLabel}</dt>
                     <dd className="mt-1">
-                      <Rich text={item.ownership} />
+                      <Rich text={item.ownership} locale={locale} />
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-ink-muted">Кому подходит</dt>
+                    <dt className="text-ink-muted">{t.formats.suitsLabel}</dt>
                     <dd className="mt-1">
-                      <Rich text={item.suits} />
+                      <Rich text={item.suits} locale={locale} />
                     </dd>
                   </div>
                 </dl>
@@ -167,11 +172,11 @@ export function Formats({ id, heading, items, href }: FormatsProps) {
       <div data-reveal="fade" className="col-span-full mt-16 md:col-span-6 lg:col-span-5 lg:col-start-1 lg:mt-24">
         {heading.note ? (
           <p className="type-lead max-w-[40ch]">
-            <Rich text={heading.note} />
+            <Rich text={heading.note} locale={locale} />
           </p>
         ) : null}
         <p className={clsx('type-ui', heading.note && 'mt-6')}>
-          <TextLink href={href}>{heading.cta?.label ?? 'Запросить подборку'}</TextLink>
+          <TextLink href={href}>{heading.cta?.label ?? t.requestCta}</TextLink>
         </p>
       </div>
     </section>

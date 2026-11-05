@@ -1,4 +1,4 @@
-// Inline <head> script (runs before first paint, appended to the boot script in app/layout.tsx).
+// Inline <head> script (runs before first paint, appended to the boot script in components/layout/site-shell.tsx).
 //
 // Hero entry (art-direction §5) plays on a direct entry to any page: not when the visitor came
 // from another page of this site (the curtain plays it then, transition-provider.tsx), not with a

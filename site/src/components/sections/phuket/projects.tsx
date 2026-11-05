@@ -2,9 +2,12 @@ import { clsx } from 'clsx'
 import { Stub } from '@/components/sections/shared/stub'
 import { SectionHeading } from '@/components/ui/section-heading'
 import { TextLink } from '@/components/ui/text-link'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
 import { Rich, typo } from './text'
 
 type ProjectsProps = {
+  locale: Locale
   id: string
   title: string
   lead: string
@@ -39,10 +42,13 @@ const LAYOUT = [
  * copy-phuket §5 says the block stays hidden until four real projects exist; it is built and shown
  * here with visible placeholders so the layout can be judged. Hide it at the page level before launch.
  */
-export function Projects({ id, title, lead, count, href, place, caption }: ProjectsProps) {
+export function Projects({ locale, id, title, lead, count, href, place, caption }: ProjectsProps) {
+  const t = getDictionary(locale).phuket
+  // Placeholder words of the cards (`card` below is the layout slot).
+  const words = t.projects
   return (
     <section aria-labelledby={id} className="grid-site pt-section">
-      <SectionHeading id={id} title={title} lead={typo(lead)} reveal />
+      <SectionHeading id={id} title={title} lead={typo(lead, locale)} reveal />
 
       <ul role="list" className="col-span-full mt-heading grid grid-cols-subgrid gap-y-16 md:gap-y-20 lg:gap-y-32">
         {LAYOUT.slice(0, count).map((card, i) => (
@@ -52,29 +58,29 @@ export function Projects({ id, title, lead, count, href, place, caption }: Proje
                 data-reveal="clip"
                 className={clsx('flex items-end bg-sand p-4 md:p-6', card.wide ? 'aspect-[3/2]' : 'aspect-[4/5]')}
               >
-                <Stub className="type-small">фото проекта с разрешения застройщика</Stub>
+                <Stub className="type-small">{words.photoStub}</Stub>
               </div>
               {caption ? (
                 <figcaption className="type-small mt-3 text-ink-muted">
-                  <Rich text={caption} />
+                  <Rich text={caption} locale={locale} />
                 </figcaption>
               ) : null}
             </figure>
             <div data-reveal="fade" className="mt-6">
               <h3 className="type-d3">
-                <Stub>название проекта</Stub>
+                <Stub>{words.nameStub}</Stub>
               </h3>
               <p className="type-body mt-3">
-                <Stub>тип объекта</Stub>, сдача <Stub>квартал и год</Stub>
+                <Stub>{words.typeStub}</Stub>, {words.handover} <Stub>{words.handoverStub}</Stub>
               </p>
-              <p className="type-body">Цена по запросу</p>
+              <p className="type-body">{words.price}</p>
               {place ? (
                 <p className="type-small mt-1 text-ink-muted">
-                  <Rich text={place} />
+                  <Rich text={place} locale={locale} />
                 </p>
               ) : null}
               <p className="type-ui mt-6">
-                <TextLink href={href}>Запросить подборку</TextLink>
+                <TextLink href={href}>{t.requestCta}</TextLink>
               </p>
             </div>
           </li>

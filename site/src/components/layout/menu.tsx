@@ -10,10 +10,11 @@ import { useLenis } from 'lenis/react'
 import { TransitionLink as Link } from '@/components/motion/transition-link'
 import { usePathname } from 'next/navigation'
 import { type CSSProperties, type ReactNode, type RefObject, useEffect, useRef } from 'react'
+import { useLocale } from '@/i18n/client'
+import { fmt } from '@/i18n/format'
 import {
   type DestinationId,
   destinations,
-  englishLink,
   mobileDestinationLinks,
   mobileNav,
   resolveLink,
@@ -24,6 +25,7 @@ import { LocalTime } from '@/components/ui/local-time'
 import { MessengerLink } from '@/components/ui/messenger-link'
 import { ReplyTime } from '@/components/ui/reply-time'
 import { ChevronIcon } from '@/components/ui/icons'
+import { LanguageSwitcher } from './language-switcher'
 import { currentFor } from './nav-utils'
 
 export type DestinationArt = Partial<Record<DestinationId, ReactNode>>
@@ -45,6 +47,9 @@ export function MenuDialog({ id, open, onRequestClose, returnFocusRef }: MenuDia
   const closeRef = useRef<HTMLButtonElement>(null)
   const wasOpen = useRef(false)
   const pathname = usePathname()
+  const { t } = useLocale()
+  const labels = t.common.nav
+  const words = t.common.menu
   const lenis = useLenis()
   const lenisRef = useRef(lenis)
 
@@ -91,7 +96,7 @@ export function MenuDialog({ id, open, onRequestClose, returnFocusRef }: MenuDia
   // «Услуги» expands only when it holds more than one built page; with just «Сопровождение
   // сделки» live, that page is a plain item, as in the desktop header (BUILD_PLAN decision 5).
   const serviceLinks = servicesNav.flatMap((item) => {
-    const link = resolveLink(item)
+    const link = resolveLink(item, labels)
     return link ? [link] : []
   })
   let i = 0
@@ -100,7 +105,7 @@ export function MenuDialog({ id, open, onRequestClose, returnFocusRef }: MenuDia
     <dialog
       ref={dialogRef}
       id={id}
-      aria-label="Меню"
+      aria-label={words.label}
       data-open={open ? 'true' : 'false'}
       data-lenis-prevent=""
       onCancel={(e) => {
@@ -115,7 +120,7 @@ export function MenuDialog({ id, open, onRequestClose, returnFocusRef }: MenuDia
       <div className="grid-site h-header items-center">
         <Link
           href="/"
-          aria-label={`${site.name}, на главную`}
+          aria-label={fmt(t.common.header.homeLabel, { name: site.name })}
           onClick={onRequestClose}
           className="type-ui col-span-2 inline-flex min-h-11 items-center text-[1.125rem] md:col-span-3"
         >
@@ -124,25 +129,29 @@ export function MenuDialog({ id, open, onRequestClose, returnFocusRef }: MenuDia
         <button
           ref={closeRef}
           type="button"
-          aria-label="Закрыть меню"
+          aria-label={words.closeLabel}
           onClick={onRequestClose}
           className="type-ui col-span-2 inline-flex min-h-11 min-w-11 items-center justify-end justify-self-end md:col-start-6 md:col-end-9 lg:col-start-10 lg:col-end-13"
         >
-          Закрыть
+          {words.close}
         </button>
       </div>
 
-      <nav aria-label="Меню" className="grid-site pt-6 pb-[calc(3rem+env(safe-area-inset-bottom))]">
+      <nav aria-label={words.label} className="grid-site pt-6 pb-[calc(3rem+env(safe-area-inset-bottom))]">
         <ul role="list" className="col-span-full flex flex-col gap-2 md:col-span-6">
           <li data-stagger="" style={stagger(i++)}>
             <details className="group details-animate">
               <summary className="type-d2 flex min-h-11 items-center gap-3 py-1">
-                Направления
+                {labels.destinations}
                 <ChevronIcon size={24} className="transition-transform duration-320 group-open:rotate-180" />
               </summary>
               <ul role="list" className="flex flex-col gap-1 pt-2 pb-4">
                 {mobileDestinationLinks.map((item) => {
-                  const link = resolveLink(item)
+                  const link = resolveLink(
+                    item,
+                    labels,
+                    item.destination ? t.common.destinations[item.destination].name : undefined,
+                  )
                   if (!link) return null
                   return (
                     <li key={item.href} className={item.indent ? 'pl-6' : undefined}>
@@ -175,7 +184,7 @@ export function MenuDialog({ id, open, onRequestClose, returnFocusRef }: MenuDia
             <li data-stagger="" style={stagger(i++)}>
               <details className="group details-animate">
                 <summary className="type-d2 flex min-h-11 items-center gap-3 py-1">
-                  Услуги
+                  {labels.services}
                   <ChevronIcon size={24} className="transition-transform duration-320 group-open:rotate-180" />
                 </summary>
                 <ul role="list" className="flex flex-col gap-1 pt-2 pb-4">
@@ -196,7 +205,7 @@ export function MenuDialog({ id, open, onRequestClose, returnFocusRef }: MenuDia
             </li>
           ) : null}
           {mobileNav.map((item) => {
-            const link = resolveLink(item)
+            const link = resolveLink(item, labels)
             if (!link) return null
             return (
               <li key={item.href} data-stagger="" style={stagger(i++)}>
@@ -215,20 +224,12 @@ export function MenuDialog({ id, open, onRequestClose, returnFocusRef }: MenuDia
 
         <div className="col-span-full mt-12 md:col-span-6" data-stagger="" style={stagger(i++)}>
           <div className="flex flex-wrap gap-2">
-            <MessengerLink channel="telegram" label="Telegram" />
-            <MessengerLink channel="whatsapp" label="WhatsApp" />
-            <MessengerLink channel="phone" label="Позвонить" />
+            <MessengerLink channel="telegram" label={t.common.channels.telegram.label} />
+            <MessengerLink channel="whatsapp" label={t.common.channels.whatsapp.label} />
+            <MessengerLink channel="phone" label={words.call} />
           </div>
           <ReplyTime variant="short" className="mt-4" />
-          <Link
-            href={englishLink.href}
-            lang="en"
-            hrefLang="en"
-            onClick={onRequestClose}
-            className="type-ui link-underline mt-8 inline-block"
-          >
-            {englishLink.label}
-          </Link>
+          <LanguageSwitcher className="type-ui mt-6 -ml-1" />
         </div>
       </nav>
     </dialog>
@@ -247,29 +248,33 @@ type DirectionsPanelProps = {
 
 export function DirectionsPanel({ id, open, onNavigate, art }: DirectionsPanelProps) {
   const pathname = usePathname()
+  const { t } = useLocale()
+  const labels = t.common.nav
   return (
     <div
       id={id}
       role="region"
-      aria-label="Направления"
+      aria-label={labels.destinations}
       data-open={open ? 'true' : 'false'}
       className="clip-panel absolute inset-x-0 top-full bg-salt text-ink"
     >
       <div className="grid-site pt-10 pb-16">
-        {destinations.map((d, index) => (
+        {destinations.map((d, index) => {
+          const words = t.common.destinations[d.id]
+          return (
           <div key={d.id} className="col-span-3" data-stagger="" style={stagger(index)}>
             {art?.[d.id] ? (
-              <div role="img" aria-label={d.coastLabel} className="mb-6 size-16 text-laterite">
+              <div role="img" aria-label={words.coastLabel} className="mb-6 size-16 text-laterite">
                 {art[d.id]}
               </div>
             ) : null}
-            <p className="type-d3">{d.region}</p>
+            <p className="type-d3">{words.region}</p>
             <p className="type-small mt-2 text-ink-muted">
-              <LocalTime timeZone={d.timeZone} /> {d.regionTimeLabel}
+              <LocalTime timeZone={d.timeZone} /> {words.regionTimeLabel}
             </p>
             <ul role="list" className="mt-6 flex flex-col gap-1">
               {d.links.map((item) => {
-                const link = resolveLink(item)
+                const link = resolveLink(item, labels)
                 if (!link) return null
                 return (
                   <li key={item.href}>
@@ -286,7 +291,8 @@ export function DirectionsPanel({ id, open, onNavigate, art }: DirectionsPanelPr
               })}
             </ul>
           </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

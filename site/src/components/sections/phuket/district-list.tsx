@@ -4,30 +4,34 @@ import { Locator } from '@/components/coast'
 import { SectionHeading } from '@/components/ui/section-heading'
 import { Figure } from '@/components/ui/figure'
 import { TextLink } from '@/components/ui/text-link'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
 import { phuketPage } from './content'
-import { type District, districtHref, districts } from './districts'
+import { type District, type DistrictCopy, districtHref, districts } from './districts'
 import { Rich, typo } from './text'
 
-const { districts: copy } = phuketPage
+const { districts: facts } = phuketPage
 
 /**
  * «Шесть районов Пхукета» (art-direction §4 «Карточка района», §6 block 3), north to south.
  * Anchor `#rajony` (home page and menu link here); each row has the district slug as its id,
  * so the island labels in the hero jump to it.
  */
-export function DistrictList() {
+export function DistrictList({ locale }: { locale: Locale }) {
+  const t = getDictionary(locale)
+  const copy = t.phuket.districtList
   return (
-    <section id={copy.id} aria-labelledby="rajony-title" className="grid-site pt-section">
-      <SectionHeading id="rajony-title" title={copy.title} lead={typo(copy.lead)} reveal />
+    <section id={facts.id} aria-labelledby="rajony-title" className="grid-site pt-section">
+      <SectionHeading id="rajony-title" title={copy.title} lead={typo(copy.lead, locale)} reveal />
 
       <ol role="list" data-reveal="items" className="col-span-full mt-heading grid grid-cols-subgrid">
         {districts.map((d) => (
-          <DistrictRow key={d.id} district={d} />
+          <DistrictRow key={d.id} locale={locale} district={d} copy={t.districts.districts[d.id]} />
         ))}
       </ol>
 
       <p className="type-ui col-span-full mt-12 lg:col-start-6 lg:col-span-7">
-        <TextLink href={copy.quiz.href}>{copy.quiz.label}</TextLink>
+        <TextLink href={facts.quizHref}>{copy.quiz}</TextLink>
       </p>
     </section>
   )
@@ -44,9 +48,9 @@ export function DistrictList() {
  * full (600 ms). Rows of districts without a page are plain text with no hover: sending them to the
  * quiz would answer «tell me about Kamala» with a form.
  */
-function DistrictRow({ district: d }: { district: District }) {
+function DistrictRow({ locale, district: d, copy }: { locale: Locale; district: District; copy: DistrictCopy }) {
   const linked = Boolean(d.page)
-  const name = typo(d.name)
+  const name = typo(copy.name, locale)
 
   return (
     <li
@@ -83,12 +87,12 @@ function DistrictRow({ district: d }: { district: District }) {
 
       <div className="col-span-full md:col-span-6 lg:col-span-3 lg:col-start-6 lg:row-start-1">
         <p className="type-lead">
-          <Rich text={d.verdict} />
+          <Rich text={copy.verdict} locale={locale} />
         </p>
         <ul role="list" className="type-small mt-4 flex flex-col gap-1 text-ink-muted">
-          {d.facts.map((fact) => (
+          {copy.facts.map((fact) => (
             <li key={fact}>
-              <Rich text={fact} />
+              <Rich text={fact} locale={locale} />
             </li>
           ))}
         </ul>
@@ -102,12 +106,13 @@ function DistrictRow({ district: d }: { district: District }) {
 
       {d.photo ? (
         <Figure
+          locale={locale}
           photo={d.photo.key}
           ratio="3x2"
           sizes="(min-width: 64rem) 16vw, (min-width: 48rem) 75vw, 100vw"
           // The row already names the place and carries the locator; on desktop the caption is
           // left to screen readers so the thumbnail stays clean.
-          caption={<span className="lg:sr-only">{d.photo.caption}</span>}
+          caption={<span className="lg:sr-only">{copy.photoCaption}</span>}
           className="col-span-full md:col-span-6 lg:col-span-2 lg:col-start-11 lg:row-start-1 lg:[&>figcaption]:mt-0"
           mediaClassName={clsx(
             linked &&

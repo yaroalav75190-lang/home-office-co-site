@@ -4,16 +4,20 @@
 // 88 px from 1024 px, 64 px below. Transparent at the top of the page; after 120 px of scrolling
 // down it slides away (400 ms) and comes back on scroll up on solid salt. Over sections marked
 // `data-surface="ink"` it inverts (200 ms).
-// Full navigation from 1280 px: at 1024 the six items, «English» and the button need ~760 px but
-// columns 4–12 give ~700, so 1024–1279 uses the compact header (logo, «English», button, «Меню»).
+// Full navigation from 1280 px: at 1024 the six items, the language switcher and the button need
+// ~760 px but columns 4–12 give ~700, so 1024–1279 uses the compact header (logo, «RU · EN · ES»,
+// button, «Меню»). Words come from `common` of the page's dictionary.
 // Under 1024: logo, (from 768 px) the button, «Меню». On /podbor: logo and «Закрыть».
 
 import { clsx } from 'clsx'
 import { TransitionLink as Link } from '@/components/motion/transition-link'
 import { usePathname, useRouter } from 'next/navigation'
 import { type CSSProperties, useCallback, useEffect, useId, useRef, useState } from 'react'
-import { contacts, englishLink, mainNav, primaryCta, resolveLink, site } from '@/lib/site'
+import { useLocale } from '@/i18n/client'
+import { fmt } from '@/i18n/format'
+import { contacts, mainNav, primaryCta, resolveLink, site } from '@/lib/site'
 import { Button } from '@/components/ui/button'
+import { LanguageSwitcher } from './language-switcher'
 import { type DestinationArt, DirectionsPanel, MenuDialog } from './menu'
 import { currentFor, isQuizPath } from './nav-utils'
 
@@ -28,6 +32,9 @@ type HeaderProps = {
 export function Header({ destinationArt }: HeaderProps) {
   const pathname = usePathname()
   const quiz = isQuizPath(pathname)
+  const { t } = useLocale()
+  const words = t.common.header
+  const labels = t.common.nav
   const headerRef = useRef<HTMLElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const directionsButtonRef = useRef<HTMLButtonElement>(null)
@@ -137,8 +144,8 @@ export function Header({ destinationArt }: HeaderProps) {
       <div className="grid-site h-full items-center">
         <Link
           href="/"
-          aria-label={`${site.name}, на главную`}
-          aria-current={pathname === '/' ? 'page' : undefined}
+          aria-label={fmt(words.homeLabel, { name: site.name })}
+          aria-current={currentFor(pathname, '/')}
           className="type-ui col-span-2 inline-flex min-h-11 items-center justify-self-start text-[1.125rem] whitespace-nowrap md:col-span-3"
         >
           {site.name}
@@ -148,7 +155,7 @@ export function Header({ destinationArt }: HeaderProps) {
           <QuizClose />
         ) : (
           <>
-            <nav aria-label="Основная навигация" className="hidden xl:col-span-6 xl:col-start-4 xl:block">
+            <nav aria-label={words.mainNavLabel} className="hidden xl:col-span-6 xl:col-start-4 xl:block">
               <ul role="list" className="list-commas type-ui flex flex-wrap items-center gap-x-[0.3em]">
                 {mainNav.map((item) => {
                   if (item.href === '/destinations') {
@@ -162,12 +169,12 @@ export function Header({ destinationArt }: HeaderProps) {
                           onClick={() => setPanelOpen((v) => !v)}
                           className="inline-flex min-h-11 items-center"
                         >
-                          <span className="link-reveal">{item.label}</span>
+                          <span className="link-reveal">{labels[item.id]}</span>
                         </button>
                       </li>
                     )
                   }
-                  const link = resolveLink(item)
+                  const link = resolveLink(item, labels)
                   if (!link) return null
                   return (
                     <li key={item.href} className="flex items-center">
@@ -184,25 +191,18 @@ export function Header({ destinationArt }: HeaderProps) {
               </ul>
             </nav>
 
-            <div className="col-span-2 flex items-center justify-end gap-6 justify-self-end md:col-start-4 md:col-end-9 lg:col-start-4 lg:col-end-13 xl:col-span-3 xl:col-start-10">
+            <div className="col-span-2 flex items-center justify-end gap-6 justify-self-end xl:gap-5 2xl:gap-6 md:col-start-4 md:col-end-9 lg:col-start-4 lg:col-end-13 xl:col-span-3 xl:col-start-10">
               {/* A number flagged `placeholder` in @/lib/site never sits in the header (QA round 1 §2). */}
               {contacts.phone.placeholder ? null : (
                 <a
                   href={contacts.phone.href}
-                  aria-label={`Позвонить по номеру ${contacts.phone.display}`}
+                  aria-label={fmt(words.callLabel, { phone: contacts.phone.display })}
                   className="type-ui nums hidden min-h-11 items-center whitespace-nowrap xl:inline-flex"
                 >
                   <span className="link-reveal">{contacts.phone.display}</span>
                 </a>
               )}
-              <Link
-                href={englishLink.href}
-                lang="en"
-                hrefLang="en"
-                className="type-ui hidden min-h-11 items-center lg:inline-flex"
-              >
-                <span className="link-reveal">{englishLink.label}</span>
-              </Link>
+              <LanguageSwitcher className="type-ui hidden shrink-0 whitespace-nowrap lg:block" />
               {/* Under 768 px the header is the mark and «Меню» only; the action lives in the sticky bar
                   (art-direction §4). `max-md:hidden`, not `hidden md:inline-flex`: the button's own
                   `inline-flex` comes later in the stylesheet and would beat a plain `hidden`. */}
@@ -212,19 +212,19 @@ export function Header({ destinationArt }: HeaderProps) {
                 variant={inverted ? 'inverse' : 'primary'}
                 className="max-md:hidden"
               >
-                {primaryCta.label}
+                {labels[primaryCta.id]}
               </Button>
               <button
                 ref={menuButtonRef}
                 type="button"
-                aria-label="Открыть меню"
+                aria-label={words.openMenu}
                 aria-haspopup="dialog"
                 aria-expanded={menuOpen}
                 aria-controls={menuId}
                 onClick={() => setMenuOpen(true)}
                 className="type-ui inline-flex min-h-11 min-w-11 items-center justify-end xl:hidden"
               >
-                Меню
+                {words.menu}
               </button>
             </div>
           </>
@@ -262,11 +262,12 @@ export function Header({ destinationArt }: HeaderProps) {
 /** Quiz header action: back to the previous page of this site, or home. */
 function QuizClose() {
   const router = useRouter()
+  const { t } = useLocale()
   return (
     <Link
       href="/"
       // The visible word alone does not say what closes (WCAG 2.4.4); the name starts with it (2.5.3).
-      aria-label="Закрыть подбор"
+      aria-label={t.common.header.closeQuizLabel}
       onClick={(e) => {
         const sameSite = document.referrer.startsWith(window.location.origin)
         if (sameSite && window.history.length > 1) {
@@ -276,7 +277,7 @@ function QuizClose() {
       }}
       className="type-ui col-span-2 inline-flex min-h-11 items-center justify-end justify-self-end md:col-start-6 md:col-end-9 lg:col-span-3 lg:col-start-10"
     >
-      <span className="link-reveal">Закрыть</span>
+      <span className="link-reveal">{t.common.header.closeQuiz}</span>
     </Link>
   )
 }

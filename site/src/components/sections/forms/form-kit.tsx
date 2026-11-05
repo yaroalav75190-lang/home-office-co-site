@@ -11,6 +11,10 @@ import { Button } from '@/components/ui/button'
 import { ChoiceTile } from '@/components/ui/choice-tile'
 import { FieldError, PhoneField, TextField, validatePhone } from '@/components/ui/field'
 import { PhoneIcon } from '@/components/ui/icons'
+import { useLocale } from '@/i18n/client'
+import { type Locale, intlLocale, localizePath } from '@/i18n/config'
+import { fmt } from '@/i18n/format'
+import type { FormsDict } from '@/i18n/ru/forms'
 import { installClickGoals } from '@/lib/analytics'
 import {
   type ChannelId,
@@ -21,14 +25,13 @@ import {
   BOOKING,
   bookingDates,
   captureFirstTouch,
-  channelOptions,
   closedSlots,
-  contactLabels,
-  leadMessages,
+  formOptions,
   submitLead,
   validateEmail,
   validateTelegram,
 } from '@/lib/lead'
+import { brokerHoursIn } from '@/lib/reply-time'
 import { brokerHours, contacts } from '@/lib/site'
 import { useMinute } from './use-clock'
 
@@ -60,10 +63,11 @@ const HONEYPOT_INPUT = 'hoc_hp_x'
 
 /** Off-screen field that only bots fill. Read it with `readHoneypot(form)`. */
 export function Honeypot() {
+  const { t } = useLocale()
   return (
     <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
       <label>
-        Оставьте это поле пустым
+        {t.forms.honeypot}
         <input
           type="text"
           name={HONEYPOT_INPUT}
@@ -216,24 +220,33 @@ function CompactTile({
 
 /* ───────────────────────── Date tiles ───────────────────────── */
 
-const weekday = new Intl.DateTimeFormat('ru-RU', { weekday: 'short', timeZone: 'UTC' })
-const dayMonth = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' })
-const dayMonthShort = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short', timeZone: 'UTC' })
+const dateFormats = new Map<Locale, { weekday: Intl.DateTimeFormat; dayMonth: Intl.DateTimeFormat; dayMonthShort: Intl.DateTimeFormat }>()
 
-function dateParts(iso: string) {
+/** Weekday and date in the page's language: «Пн» / «3 ноября», «Mon» / «November 3», «lun» / «3 de noviembre». */
+function dateParts(iso: string, locale: Locale) {
+  let f = dateFormats.get(locale)
+  if (!f) {
+    const tag = intlLocale[locale]
+    f = {
+      weekday: new Intl.DateTimeFormat(tag, { weekday: 'short', timeZone: 'UTC' }),
+      dayMonth: new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', timeZone: 'UTC' }),
+      dayMonthShort: new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'short', timeZone: 'UTC' }),
+    }
+    dateFormats.set(locale, f)
+  }
   const [y, m, d] = iso.split('-').map(Number)
   const date = new Date(Date.UTC(y, m - 1, d, 12))
-  const wd = weekday.format(date)
+  const wd = f.weekday.format(date)
   return {
     weekday: wd.charAt(0).toUpperCase() + wd.slice(1),
-    label: dayMonth.format(date),
-    short: dayMonthShort.format(date),
+    label: f.dayMonth.format(date),
+    short: f.dayMonthShort.format(date),
   }
 }
 
 /** «12 ноября» for a booking date (Phuket calendar). */
-export function formatBookingDate(iso: string): string {
-  return dateParts(iso).label
+export function formatBookingDate(iso: string, locale: Locale = 'ru'): string {
+  return dateParts(iso, locale).label
 }
 
 /**
@@ -258,14 +271,15 @@ export function DateTiles({
 }) {
   const autoId = useId()
   const id = idProp ?? autoId
+  const { locale, t } = useLocale()
   const now = useMinute()
   const today = now ?? 0
   const dates = now === null ? null : bookingDates(now)
   return (
     <fieldset id={id} className={clsx('min-w-0', className)} aria-describedby={clsx(`${id}-hint`, error && `${id}-error`)}>
-      <legend className="type-small mb-1 text-ink-muted on-ink:text-on-ink-muted">Дата</legend>
+      <legend className="type-small mb-1 text-ink-muted on-ink:text-on-ink-muted">{t.forms.dates.legend}</legend>
       <p id={`${id}-hint`} className="type-small mb-3 text-ink-muted on-ink:text-on-ink-muted">
-        Ближайшие 14 дней
+        {t.forms.dates.hint}
       </p>
       <div className="grid grid-cols-4 gap-2 md:grid-cols-7">
         {dates === null
@@ -273,7 +287,7 @@ export function DateTiles({
               <div key={i} aria-hidden="true" className="min-h-16 bg-sand on-ink:bg-ink-raised" />
             ))
           : dates.map((iso, i) => {
-              const parts = dateParts(iso)
+              const parts = dateParts(iso, locale)
               const disabled = closedSlots(iso, today).length === BOOKING.slots.length
               return (
                 <label key={iso} className={clsx(tileClasses, 'min-h-16 px-3')}>
@@ -314,11 +328,12 @@ export type ChannelContactState = {
   phone: PhoneState
 }
 
+/** `phone.country` '' = the locale's default code (`defaultPhoneCountry`), set by the phone field once typed in. */
 export const emptyChannelContact: ChannelContactState = {
   channel: '',
   telegram: '',
   email: '',
-  phone: { country: 'ru', digits: '', value: '' },
+  phone: { country: '', digits: '', value: '' },
 }
 
 /** The `contact` and `phoneCountry` values to send for the chosen channel. */
@@ -336,20 +351,21 @@ export function contactValue(s: ChannelContactState): { contact: string; phoneCo
   }
 }
 
-/** Submit-time check of channel + contact with copy-global §8.3 wording. */
-export function validateChannelContact(s: ChannelContactState): FieldErrors {
-  if (!s.channel) return { channel: leadMessages.channel }
+/** Submit-time check of channel + contact with copy-global §8.3 wording (`forms.messages`). */
+export function validateChannelContact(s: ChannelContactState, m: FormsDict['messages']): FieldErrors {
+  if (!s.channel) return { channel: m.channel }
   let message: string | undefined
-  if (s.channel === 'telegram') message = validateTelegram(s.telegram)
-  else if (s.channel === 'email') message = validateEmail(s.email)
-  else message = validatePhone(s.phone.country, s.phone.digits)
+  if (s.channel === 'telegram') message = validateTelegram(s.telegram, m)
+  else if (s.channel === 'email') message = validateEmail(s.email, m)
+  else message = validatePhone(s.phone.country, s.phone.digits, m)
   return message ? { contact: message } : {}
 }
 
-const hoursHint = (() => {
-  const h = (m: number) => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`
-  return `Брокер позвонит с ${h(brokerHours.openMinutes)} до ${h(brokerHours.closeMinutes)} по Пхукету`
-})()
+/** «Брокер позвонит с 9:00 до 21:00 по Пхукету», hours formatted for the locale. */
+function hoursHint(f: FormsDict, locale: Locale): string {
+  const { open, close } = brokerHoursIn(brokerHours.utcOffsetMinutes, locale)
+  return fmt(f.phoneHoursHint, { open, close })
+}
 
 /**
  * «Куда ответить» (Telegram, WhatsApp, Звонок, Почта) and the contact field for that channel
@@ -373,13 +389,16 @@ export function ChannelContact({
 }) {
   const contactId = `${idPrefix}-contact`
   const { channel } = state
+  const { locale, t } = useLocale()
+  const f = t.forms
+  const m = f.messages
   return (
     <div className="flex flex-col gap-6">
       <OptionTiles
         id={`${idPrefix}-channel`}
         name={`${idPrefix}-channel`}
-        legend="Куда ответить"
-        options={channelOptions}
+        legend={f.fields.channel}
+        options={formOptions(f, locale).channels}
         value={channel}
         columns={columns}
         error={errors.channel}
@@ -393,14 +412,14 @@ export function ChannelContact({
         <TextField
           key="telegram"
           id={contactId}
-          label={contactLabels.telegram}
-          placeholder="@username или +7 900 000-00-00"
+          label={f.contactLabels.telegram}
+          placeholder={f.placeholders.telegram}
           autoComplete="off"
           autoCapitalize="none"
           spellCheck={false}
           value={state.telegram}
           error={errors.contact}
-          validate={validateTelegram}
+          validate={(v) => validateTelegram(v, m)}
           onChange={(e) => {
             onFieldEdit('contact')
             onChange({ ...state, telegram: e.currentTarget.value })
@@ -413,14 +432,14 @@ export function ChannelContact({
           id={contactId}
           type="email"
           inputMode="email"
-          label={contactLabels.email}
-          placeholder="name@mail.ru"
+          label={f.contactLabels.email}
+          placeholder={f.placeholders.email}
           autoComplete="email"
           autoCapitalize="none"
           spellCheck={false}
           value={state.email}
           error={errors.contact}
-          validate={validateEmail}
+          validate={(v) => validateEmail(v, m)}
           onChange={(e) => {
             onFieldEdit('contact')
             onChange({ ...state, email: e.currentTarget.value })
@@ -432,9 +451,9 @@ export function ChannelContact({
           key="phone"
           id={contactId}
           name={`${idPrefix}-phone`}
-          label={contactLabels[channel]}
-          hint={channel === 'phone' ? hoursHint : undefined}
-          defaultCountry={state.phone.country}
+          label={f.contactLabels[channel]}
+          hint={channel === 'phone' ? hoursHint(f, locale) : undefined}
+          defaultCountry={state.phone.country || undefined}
           defaultValue={state.phone.digits}
           error={errors.contact}
           onValueChange={(v) => {
@@ -460,6 +479,7 @@ export function ErrorSummary({
   items: { label: string; targetId: string }[]
   summaryRef: Ref<HTMLDivElement>
 }) {
+  const { t } = useLocale()
   if (!items.length) return null
   return (
     <div
@@ -469,7 +489,7 @@ export function ErrorSummary({
       className="type-body flex items-start gap-3 bg-sand px-4 py-3 text-ink on-ink:bg-ink-raised on-ink:text-salt"
     >
       <span>
-        Заявка не отправлена. Исправьте поля:{' '}
+        {t.forms.summaryLead}{' '}
         {items.map((item, i) => (
           <span key={item.targetId}>
             <button
@@ -513,12 +533,13 @@ export function SubmitButton({
   variant?: 'primary' | 'inverse'
   className?: string
 }) {
+  const { t } = useLocale()
   return (
     <Button type="submit" variant={variant} disabled={busy} aria-busy={busy || undefined} className={className}>
       <span className="grid">
         <span className={clsx('[grid-area:1/1]', busy && 'invisible')}>{label}</span>
         <span className={clsx('[grid-area:1/1]', !busy && 'invisible')} aria-hidden={!busy}>
-          Отправляем…
+          {t.forms.sending}
         </span>
       </span>
     </Button>
@@ -527,11 +548,8 @@ export function SubmitButton({
 
 /** Note under every submit button (copy-global §9). */
 export function ChannelNote({ className }: { className?: string }) {
-  return (
-    <p className={clsx('type-small text-ink-muted on-ink:text-on-ink-muted', className)}>
-      Пишем только в выбранный канал. Звоним, если попросите
-    </p>
-  )
+  const { t } = useLocale()
+  return <p className={clsx('type-small text-ink-muted on-ink:text-on-ink-muted', className)}>{t.forms.channelNote}</p>
 }
 
 /**
@@ -552,6 +570,7 @@ export function SubmitFailure({
   /** `inverse` on ink fields (default), `primary` on salt. */
   variant?: 'primary' | 'inverse'
 }) {
+  const { t } = useLocale()
   if (result.reason === 'validation') return null
   const neutral = result.reason === 'duplicate'
   return (
@@ -565,7 +584,7 @@ export function SubmitFailure({
       {neutral ? null : (
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant={variant} size="sm" onClick={onRetry} disabled={busy}>
-            {busy ? 'Отправляем…' : 'Повторить отправку'}
+            {busy ? t.forms.sending : t.forms.retry}
           </Button>
           {result.reason === 'server' ? (
             <a
@@ -573,7 +592,7 @@ export function SubmitFailure({
               className="type-ui inline-flex h-11 items-center gap-2 px-3 underline-offset-4 hover:underline"
             >
               <PhoneIcon size={20} />
-              Позвонить
+              {t.forms.call}
             </a>
           ) : null}
         </div>
@@ -588,18 +607,21 @@ export type SubmitStatus = 'idle' | 'busy' | 'done'
 
 /**
  * Sending state for a form: `send(payload)` posts through `submitLead` and resolves the result;
- * `retry()` re-sends the last payload. `done` only after `{ ok: true }`.
+ * `retry()` re-sends the last payload. `done` only after `{ ok: true }`. The page's locale goes
+ * with the lead (field errors come back in it) and the page path gets its locale prefix.
  */
 export function useLeadSubmit() {
   const [status, setStatus] = useState<SubmitStatus>('idle')
   const [failure, setFailure] = useState<Extract<LeadResult, { ok: false }> | null>(null)
   const [last, setLast] = useState<LeadPayload | null>(null)
+  const { locale, t } = useLocale()
 
-  const send = useCallback(async (payload: LeadPayload): Promise<LeadResult> => {
+  const send = useCallback(async (input: LeadPayload): Promise<LeadResult> => {
+    const payload: LeadPayload = { ...input, page: localizePath(locale, input.page), locale }
     setStatus('busy')
     setFailure(null)
     setLast(payload)
-    const result = await submitLead(payload)
+    const result = await submitLead(payload, { forms: t.forms, reply: t.common.reply })
     if (result.ok) {
       setStatus('done')
     } else {
@@ -607,7 +629,7 @@ export function useLeadSubmit() {
       setStatus('idle')
     }
     return result
-  }, [])
+  }, [locale, t])
 
   const retry = useCallback(() => (last ? send(last) : Promise.resolve(null)), [last, send])
 

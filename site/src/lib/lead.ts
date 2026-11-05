@@ -1,6 +1,6 @@
 // Leads: the one way every form sends a request (docs/BUILD_PLAN.md, «Лиды»).
 //
-//   submitLead({ type: 'guide', fields: { name, channel, contact, consent: 'yes' }, page: '/' })
+//   submitLead({ type: 'guide', fields: { name, channel, contact, consent: 'yes' }, page: '/', locale }, t)
 //     → { ok: true } | { ok: false; error: string; reason; fieldErrors? }
 //
 // - POST /api/lead (route handler in `app/api/lead/route.ts`), JSON.
@@ -13,8 +13,15 @@
 //   fires here after `ok`, so forms must not fire it again.
 //
 // The module is shared by the browser (forms) and the server (validation in the route handler):
-// no 'use client', no React. Field names and option ids below are the API.
+// no 'use client', no React. Field names and option ids below are the API. Words come from the
+// `forms` dictionary of the page's locale, passed in by the caller (the client gets it from
+// <LocaleProvider>, the route handler from `getDictionary(payload.locale)`), so the server answers
+// field errors in the language the visitor submitted in.
 
+import type { CommonDict } from '@/i18n/ru/common'
+import type { FormsDict } from '@/i18n/ru/forms'
+import { type Locale, intlLocale } from '@/i18n/config'
+import { fmt } from '@/i18n/format'
 import { brokerToday, brokerWallTimeToInstant, computeReplyState, replyConfig, visitorTimeZone } from '@/lib/reply-time'
 import { contacts } from '@/lib/site'
 import { type Goal, getClientIds, trackGoal } from '@/lib/analytics'
@@ -27,8 +34,10 @@ export type LeadPayload = {
   type: LeadType
   /** Field values by name (see `LeadFieldName`). Unknown names are dropped by the server. */
   fields: Record<string, string>
-  /** Path of the page with the form, e.g. «/services/deal». */
+  /** Path of the page with the form, e.g. «/services/deal» or «/en/services/deal». */
   page: string
+  /** Language of the page: the server answers field errors in it and tells the broker. Default 'ru'. */
+  locale?: Locale
 }
 
 export type LeadFailureReason = 'validation' | 'duplicate' | 'offline' | 'server'
@@ -70,113 +79,84 @@ export const LEAD_FIELDS: Record<LeadType, readonly LeadFieldName[]> = {
   guide: ['name', 'channel', 'contact', 'phoneCountry', 'consent'],
 }
 
-/* ───────────────────────── Options (ids are the API, labels from copy) ───────────────────────── */
+/* ───────────────────────── Options (ids are the API, labels from the dictionary) ───────────────────────── */
 
 export type Option<T extends string = string> = { id: T; label: string; description?: string }
 
 export type ChannelId = 'telegram' | 'whatsapp' | 'phone' | 'email'
-
-/** «Куда ответить» (copy-global §8.2). */
-export const channelOptions: Option<ChannelId>[] = [
-  { id: 'telegram', label: 'Telegram' },
-  { id: 'whatsapp', label: 'WhatsApp' },
-  { id: 'phone', label: 'Звонок' },
-  { id: 'email', label: 'Почта' },
-]
-
-/** Label of the contact field per channel (copy-global §8.2). */
-export const contactLabels: Record<ChannelId, string> = {
-  telegram: 'Ник или номер в Telegram',
-  whatsapp: 'Номер WhatsApp',
-  phone: 'Телефон',
-  email: 'Почта',
-}
-
 export type DirectionId = 'phuket' | 'pattaya' | 'bali' | 'dubai' | 'cambodia' | 'undecided'
-
-/** Quiz question 1 (copy-podbor). */
-export const quizDirections: Option<DirectionId>[] = [
-  { id: 'phuket', label: 'Пхукет', description: 'Шесть районов, квартиры и виллы' },
-  { id: 'pattaya', label: 'Паттайя', description: 'Город у моря на материке' },
-  { id: 'bali', label: 'Бали', description: 'Правила владения не такие, как в Таиланде' },
-  { id: 'dubai', label: 'Дубай', description: 'Резидентская виза при покупке от установленной суммы' },
-  { id: 'cambodia', label: 'Камбоджа', description: 'Квартиры у моря' },
-  { id: 'undecided', label: 'Пока выбираю', description: 'Брокер сравнит страны под вашу задачу' },
-]
-
-/** «Направление» in the viewing form (copy-global §8.2). */
-export const formDirections: Option<DirectionId>[] = [
-  { id: 'phuket', label: 'Пхукет' },
-  { id: 'pattaya', label: 'Паттайя' },
-  { id: 'bali', label: 'Бали' },
-  { id: 'dubai', label: 'Дубай' },
-  { id: 'cambodia', label: 'Камбоджа' },
-  { id: 'undecided', label: 'Пока не выбрал' },
-]
-
-/** Districts the quiz accepts from `?district=` (ids match `phuketDistricts` in `@/components/coast`). */
-export const quizDistricts: Option[] = [
-  { id: 'layan', label: 'Лаян' },
-  { id: 'bang-tao', label: 'Банг Тао' },
-  { id: 'kamala', label: 'Камала' },
-  { id: 'karon-kata', label: 'Карон и Ката' },
-  { id: 'nai-harn-rawai', label: 'Най Харн и Раваи' },
-  { id: 'chalong', label: 'Чалонг' },
-]
-
+export type QuizDistrictId = keyof FormsDict['options']['districts']
 export type GoalId = 'income' | 'wintering' | 'relocation' | 'capital'
-
-/** Quiz question 2; `segment` is the amoCRM segment (copy-podbor, sales-strategy §1). */
-export const quizGoals: (Option<GoalId> & { segment: number })[] = [
-  { id: 'income', label: 'Доход от аренды или перепродажи', description: 'Считаем загрузку по сезонам и цену по этапам стройки', segment: 1 },
-  { id: 'wintering', label: 'Жить зимой, сдавать остальное время', description: 'С ноября по март живёте сами, потом квартира сдаётся', segment: 2 },
-  { id: 'relocation', label: 'Переезд и долгое проживание', description: 'Расскажем, какие визы есть в выбранной стране', segment: 3 },
-  { id: 'capital', label: 'Сохранить капитал в валюте', description: 'Проверяем застройщика и смотрим, легко ли будет продать объект', segment: 4 },
-]
-
 export type BudgetId = 'lt150' | '150-300' | '300-600' | 'gt600' | 'unsure'
-
-/** Quiz question 3. Bounds kept for the promo version (DEMO_DECISIONS «Формы»); the client confirms them. */
-export const quizBudgets: Option<BudgetId>[] = [
-  { id: 'lt150', label: 'До 150 тыс. $' },
-  { id: '150-300', label: '150–300 тыс. $' },
-  { id: '300-600', label: '300–600 тыс. $' },
-  { id: 'gt600', label: 'От 600 тыс. $' },
-  {
-    id: 'unsure',
-    label: 'Хочу понять, что реально за мой бюджет',
-    description: 'Брокер спросит сумму в сообщении и покажет, что можно купить на эти деньги',
-  },
-]
-
 export type TimelineId = 'month' | '1-3' | '3-6' | 'exploring'
-
-/** Quiz question 4. */
-export const quizTimelines: Option<TimelineId>[] = [
-  { id: 'month', label: 'В ближайший месяц' },
-  { id: '1-3', label: 'Через 1–3 месяца' },
-  { id: '3-6', label: 'Через 3–6 месяцев' },
-  { id: 'exploring', label: 'Пока изучаю рынок', description: 'Подборка поможет понять цены, торопить не будем' },
-]
-
 export type ConsultFormatId = 'video' | 'call' | 'meeting'
-
-/** «Формат», consultation on /services/deal (copy-global §8.2). */
-export const consultationFormats: Option<ConsultFormatId>[] = [
-  { id: 'video', label: 'Видеозвонок' },
-  { id: 'call', label: 'Звонок' },
-  { id: 'meeting', label: 'Встреча на Пхукете' },
-]
-
 export type ViewingFormatId = 'viewing' | 'online' | 'video' | 'call'
 
-/** «Формат», booking on /contacts (copy-contacts §3). */
-export const viewingFormats: Option<ViewingFormatId>[] = [
-  { id: 'viewing', label: 'Просмотр на Пхукете', description: 'Встреча на объекте, адрес пришлём после записи' },
-  { id: 'online', label: 'Онлайн-показ', description: 'Брокер показывает объект по видеосвязи' },
-  { id: 'video', label: 'Консультация по видео', description: '30 минут: задача, районы, бюджет' },
-  { id: 'call', label: 'Звонок', description: 'Тот же разговор по телефону' },
+/** «Куда ответить» (copy-global §8.2), in this order. */
+export const CHANNEL_IDS: readonly ChannelId[] = ['telegram', 'whatsapp', 'phone', 'email']
+/** Quiz question 1 (copy-podbor) and «Направление» in the viewing form. */
+export const DIRECTION_IDS: readonly DirectionId[] = ['phuket', 'pattaya', 'bali', 'dubai', 'cambodia', 'undecided']
+/** Districts the quiz accepts from `?district=` (ids match `phuketDistricts` in `@/components/coast`). */
+export const QUIZ_DISTRICT_IDS: readonly QuizDistrictId[] = ['layan', 'bang-tao', 'kamala', 'karon-kata', 'nai-harn-rawai', 'chalong']
+/** Quiz question 2; `segment` is the amoCRM segment (copy-podbor, sales-strategy §1). */
+export const QUIZ_GOALS: readonly { id: GoalId; segment: number }[] = [
+  { id: 'income', segment: 1 },
+  { id: 'wintering', segment: 2 },
+  { id: 'relocation', segment: 3 },
+  { id: 'capital', segment: 4 },
 ]
+/**
+ * Quiz question 3, thousands of US dollars. Bounds kept for the promo version (DEMO_DECISIONS
+ * «Формы»); the client confirms them. The words around the numbers are `forms.options.budgets`.
+ */
+export const QUIZ_BUDGETS: readonly { id: BudgetId; min?: number; max?: number }[] = [
+  { id: 'lt150', max: 150 },
+  { id: '150-300', min: 150, max: 300 },
+  { id: '300-600', min: 300, max: 600 },
+  { id: 'gt600', min: 600 },
+  { id: 'unsure' },
+]
+/** Quiz question 4. */
+export const TIMELINE_IDS: readonly TimelineId[] = ['month', '1-3', '3-6', 'exploring']
+/** «Формат», consultation on /services/deal (copy-global §8.2). */
+export const CONSULT_FORMAT_IDS: readonly ConsultFormatId[] = ['video', 'call', 'meeting']
+/** «Формат», booking on /contacts (copy-contacts §3). */
+export const VIEWING_FORMAT_IDS: readonly ViewingFormatId[] = ['viewing', 'online', 'video', 'call']
+
+/** A budget tile label: «До 150 тыс. $», «150–300 тыс. $», «От 600 тыс. $» (numbers by locale). */
+function budgetLabel(b: (typeof QUIZ_BUDGETS)[number], f: FormsDict, locale: Locale): string {
+  const n = (v: number) => new Intl.NumberFormat(intlLocale[locale]).format(v)
+  const t = f.options.budgets
+  if (b.min !== undefined && b.max !== undefined) return fmt(t.range, { min: n(b.min), max: n(b.max) })
+  if (b.max !== undefined) return fmt(t.upTo, { max: n(b.max) })
+  if (b.min !== undefined) return fmt(t.from, { min: n(b.min) })
+  return t.unsure.label
+}
+
+const described = <T extends string>(id: T, o: { label: string; description: string }): Option<T> =>
+  o.description ? { id, label: o.label, description: o.description } : { id, label: o.label }
+
+/** Every option list of the forms, with labels in the locale of `f`. */
+export function formOptions(f: FormsDict, locale: Locale) {
+  const o = f.options
+  return {
+    channels: CHANNEL_IDS.map((id): Option<ChannelId> => ({ id, label: f.channels[id] })),
+    quizDirections: DIRECTION_IDS.map((id) => described(id, o.directions[id])),
+    formDirections: DIRECTION_IDS.map((id): Option<DirectionId> => ({ id, label: o.formDirections[id] })),
+    quizDistricts: QUIZ_DISTRICT_IDS.map((id): Option<QuizDistrictId> => ({ id, label: o.districts[id] })),
+    goals: QUIZ_GOALS.map((g) => ({ ...described(g.id, o.goals[g.id]), segment: g.segment })),
+    budgets: QUIZ_BUDGETS.map((b): Option<BudgetId> =>
+      b.id === 'unsure'
+        ? { id: b.id, label: o.budgets.unsure.label, description: o.budgets.unsure.description }
+        : { id: b.id, label: budgetLabel(b, f, locale) },
+    ),
+    timelines: TIMELINE_IDS.map((id) => described(id, o.timelines[id])),
+    consultationFormats: CONSULT_FORMAT_IDS.map((id): Option<ConsultFormatId> => ({ id, label: o.consultationFormats[id] })),
+    viewingFormats: VIEWING_FORMAT_IDS.map((id) => described(id, o.viewingFormats[id])),
+  }
+}
+
+export type FormOptions = ReturnType<typeof formOptions>
 
 /**
  * Booking grid: the next 14 days, slots 11:00–18:00 on Phuket (DEMO_DECISIONS «Формы»; the client
@@ -197,62 +177,34 @@ export const BOOKING = {
  */
 export const GUIDE_HREF = '/#gid'
 
-/* ───────────────────────── Wording (copy-global §8.3, §8.4) ───────────────────────── */
-
-export const leadMessages = {
-  nameEmpty: 'Напишите, как к вам обращаться',
-  nameLong: 'Сократите имя до 60 знаков',
-  channel: 'Выберите, куда ответить',
-  telegramEmpty: 'Укажите ник или номер, к которому привязан Telegram',
-  telegramNick: 'В нике Telegram от 5 до 32 знаков: латинские буквы, цифры или _, например @ivan_petrov',
-  phoneEmpty: 'Укажите номер телефона',
-  phoneShortRu: 'Проверьте номер: после +7 нужно 10 цифр',
-  phoneShortOther: 'Проверьте номер: после кода страны не хватает цифр',
-  phoneLong: 'В номере лишние цифры. Проверьте, не повторился ли код страны',
-  emailEmpty: 'Укажите почту',
-  emailBad: 'Проверьте адрес почты, например name@mail.ru',
-  format: 'Выберите формат встречи',
-  direction: 'Выберите направление или вариант «Пока не выбрал»',
-  date: 'Выберите дату',
-  time: 'Выберите время',
-  slotTaken: 'Это время только что заняли. Выберите другое',
-  commentLong: (n: number) => `Сократите текст до 1000 знаков, сейчас ${n}`,
-  consent: 'Чтобы отправить заявку, отметьте согласие на обработку данных',
-  /** Quiz answers come from tiles; this only shows if a request was tampered with. */
-  choice: 'Выберите один из вариантов',
-  summary: (labels: string[]) => `Заявка не отправлена. Исправьте поля: ${labels.join(', ')}`,
-  offline: 'Нет связи с интернетом. Введённые данные остались в форме. Проверьте подключение и отправьте ещё раз',
-  server: `Заявка не отправилась из-за сбоя на нашей стороне. Данные остались в форме. Отправьте ещё раз или позвоните: ${contacts.phone.display}`,
-  /** 429: a retry within 10 minutes fails the same way, so the sentence leads to the phone and Telegram. */
-  rateLimited: `Заявка не отправилась: с вашего подключения было много попыток подряд. Позвоните или напишите в Telegram: ${contacts.phone.display}`,
-  duplicate: (replyBy: string) => `Заявка с этим контактом уже у брокера. Он ответит ${replyBy}`,
-} as const
-
 export const NAME_MAX = 60
 export const COMMENT_MAX = 1000
 
+/** Validation messages of a locale (`forms.messages`). */
+export type LeadMessages = FormsDict['messages']
+
 /* ───────────────────────── Validators (shared by forms and the server) ───────────────────────── */
 
-export function validateName(value: string | undefined): string | undefined {
+export function validateName(value: string | undefined, m: LeadMessages): string | undefined {
   const v = (value ?? '').trim()
-  if (!v) return leadMessages.nameEmpty
-  if (v.length > NAME_MAX) return leadMessages.nameLong
+  if (!v) return m.nameEmpty
+  if (v.length > NAME_MAX) return m.nameLong
   return undefined
 }
 
 export function isChannel(value: unknown): value is ChannelId {
-  return channelOptions.some((o) => o.id === value)
+  return (CHANNEL_IDS as readonly unknown[]).includes(value)
 }
 
-export function validateEmail(value: string): string | undefined {
+export function validateEmail(value: string, m: LeadMessages): string | undefined {
   const v = value.trim()
-  if (!v) return leadMessages.emailEmpty
-  if (v.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@.]{2,}$/.test(v)) return leadMessages.emailBad
+  if (!v) return m.emailEmpty
+  if (v.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@.]{2,}$/.test(v)) return m.emailBad
   return undefined
 }
 
 /** A phone typed as text (Telegram field): «+7 900 000-00-00», «8 900…», «+66 81…», «701 234 56 78». */
-function validateFreePhone(value: string): string | undefined {
+function validateFreePhone(value: string, m: LeadMessages): string | undefined {
   const v = value.trim()
   const digits = v.replace(/\D/g, '')
   // «+7…», 11 digits after the trunk «8» or the code «7», or «89…» / «79…» (a Russian mobile with a
@@ -261,22 +213,22 @@ function validateFreePhone(value: string): string | undefined {
   const russian = v.startsWith('+7') || (!v.startsWith('+') && /^[78]/.test(digits) && (digits.length >= 11 || /^[78]9/.test(digits)))
   if (russian) {
     const national = digits.slice(1)
-    if (national.length < 10) return leadMessages.phoneShortRu
-    if (national.length > 10) return leadMessages.phoneLong
+    if (national.length < 10) return m.phoneShortRu
+    if (national.length > 10) return m.phoneLong
     return undefined
   }
-  if (digits.length < 8) return leadMessages.phoneShortOther
-  if (digits.length > 15) return leadMessages.phoneLong
+  if (digits.length < 8) return m.phoneShortOther
+  if (digits.length > 15) return m.phoneLong
   return undefined
 }
 
-export function validateTelegram(value: string): string | undefined {
+export function validateTelegram(value: string, m: LeadMessages): string | undefined {
   const v = value.trim()
-  if (!v) return leadMessages.telegramEmpty
+  if (!v) return m.telegramEmpty
   // «@ivan_petrov», «ivan_petrov», «t.me/ivan_petrov» (copied without https://), «https://t.me/ivan_petrov/».
   const handle = v.replace(/^(https?:\/\/)?(www\.)?(t\.me|telegram\.me)\//i, '').replace(/\/+$/, '')
-  if (/^[+\d(]/.test(handle)) return validateFreePhone(handle)
-  if (!/^[A-Za-z0-9_]{5,32}$/.test(handle.replace(/^@/, ''))) return leadMessages.telegramNick
+  if (/^[+\d(]/.test(handle)) return validateFreePhone(handle, m)
+  if (!/^[A-Za-z0-9_]{5,32}$/.test(handle.replace(/^@/, ''))) return m.telegramNick
   return undefined
 }
 
@@ -285,42 +237,42 @@ export function validateTelegram(value: string): string | undefined {
  * «Другая страна». The form checks exact lengths per country with `validatePhone` from
  * `@/components/ui/field`; this is the looser server-side net with the same wording.
  */
-export function validatePhoneValue(value: string): string | undefined {
+export function validatePhoneValue(value: string, m: LeadMessages): string | undefined {
   const v = value.trim()
-  const m = /^(\+\d{0,4})\s*([\d\s-]*)$/.exec(v)
-  if (!v || !m) return v ? leadMessages.phoneShortOther : leadMessages.phoneEmpty
-  const code = m[1]
-  const national = m[2].replace(/\D/g, '')
-  if (!national) return leadMessages.phoneEmpty
+  const match = /^(\+\d{0,4})\s*([\d\s-]*)$/.exec(v)
+  if (!v || !match) return v ? m.phoneShortOther : m.phoneEmpty
+  const code = match[1]
+  const national = match[2].replace(/\D/g, '')
+  if (!national) return m.phoneEmpty
   if (code === '+7') {
-    if (national.length < 10) return leadMessages.phoneShortRu
-    if (national.length > 10) return leadMessages.phoneLong
+    if (national.length < 10) return m.phoneShortRu
+    if (national.length > 10) return m.phoneLong
     return undefined
   }
   const total = code.replace(/\D/g, '').length + national.length
-  if (total < 8 || national.length < 6) return leadMessages.phoneShortOther
-  if (total > 15) return leadMessages.phoneLong
+  if (total < 8 || national.length < 6) return m.phoneShortOther
+  if (total > 15) return m.phoneLong
   return undefined
 }
 
-export function validateContact(channel: string | undefined, value: string | undefined): string | undefined {
+export function validateContact(channel: string | undefined, value: string | undefined, m: LeadMessages): string | undefined {
   const v = value ?? ''
   switch (channel) {
     case 'telegram':
-      return validateTelegram(v)
+      return validateTelegram(v, m)
     case 'whatsapp':
     case 'phone':
-      return validatePhoneValue(v)
+      return validatePhoneValue(v, m)
     case 'email':
-      return validateEmail(v)
+      return validateEmail(v, m)
     default:
       return undefined
   }
 }
 
-export function validateComment(value: string | undefined): string | undefined {
+export function validateComment(value: string | undefined, m: LeadMessages): string | undefined {
   const n = (value ?? '').length
-  return n > COMMENT_MAX ? leadMessages.commentLong(n) : undefined
+  return n > COMMENT_MAX ? fmt(m.commentLong, { n }) : undefined
 }
 
 /** Dates open for booking: today and the next days in the Phuket calendar, «YYYY-MM-DD». */
@@ -343,15 +295,16 @@ export function closedSlots(date: string, now: number = Date.now()): string[] {
   return BOOKING.slots.filter((s) => !isSlotOpen(date, s, now))
 }
 
-const ids = <T extends string>(options: Option<T>[]) => options.map((o) => o.id) as string[]
+const has = (list: readonly string[], value: string | undefined) => list.includes(value ?? '')
 
 /**
- * Full check of a lead's fields. Returns errors keyed by field (empty object when valid).
- * Used by the route handler; forms run the same functions field by field.
+ * Full check of a lead's fields. Returns errors keyed by field (empty object when valid), in the
+ * language of `m`. Used by the route handler; forms run the same functions field by field.
  */
 export function validateLeadFields(
   type: LeadType,
   fields: Partial<Record<LeadFieldName, string>>,
+  m: LeadMessages,
   now: number = Date.now(),
 ): Partial<Record<LeadFieldName, string>> {
   const errors: Partial<Record<LeadFieldName, string>> = {}
@@ -359,70 +312,43 @@ export function validateLeadFields(
     if (message) errors[key] = message
   }
 
-  set('name', validateName(fields.name))
-  if (!isChannel(fields.channel)) errors.channel = leadMessages.channel
-  else set('contact', validateContact(fields.channel, fields.contact))
-  if (fields.consent !== 'yes') errors.consent = leadMessages.consent
+  set('name', validateName(fields.name, m))
+  if (!isChannel(fields.channel)) errors.channel = m.channel
+  else set('contact', validateContact(fields.channel, fields.contact, m))
+  if (fields.consent !== 'yes') errors.consent = m.consent
 
   if (type === 'quiz') {
-    if (!ids(quizDirections).includes(fields.direction ?? '')) errors.direction = leadMessages.choice
-    if (fields.district && (fields.direction !== 'phuket' || !ids(quizDistricts).includes(fields.district))) {
-      errors.district = leadMessages.choice
+    if (!has(DIRECTION_IDS, fields.direction)) errors.direction = m.choice
+    if (fields.district && (fields.direction !== 'phuket' || !has(QUIZ_DISTRICT_IDS, fields.district))) {
+      errors.district = m.choice
     }
-    if (!ids(quizGoals).includes(fields.goal ?? '')) errors.goal = leadMessages.choice
-    if (!ids(quizBudgets).includes(fields.budget ?? '')) errors.budget = leadMessages.choice
-    if (!ids(quizTimelines).includes(fields.timeline ?? '')) errors.timeline = leadMessages.choice
+    if (!has(QUIZ_GOALS.map((g) => g.id), fields.goal)) errors.goal = m.choice
+    if (!has(QUIZ_BUDGETS.map((b) => b.id), fields.budget)) errors.budget = m.choice
+    if (!has(TIMELINE_IDS, fields.timeline)) errors.timeline = m.choice
   }
 
   if (type === 'consultation' || type === 'viewing') {
-    const formats = type === 'consultation' ? ids(consultationFormats) : ids(viewingFormats)
-    if (!formats.includes(fields.format ?? '')) errors.format = leadMessages.format
-    if (type === 'viewing' && fields.format !== 'viewing' && !ids(formDirections).includes(fields.direction ?? '')) {
-      errors.direction = leadMessages.direction
+    const formats = type === 'consultation' ? CONSULT_FORMAT_IDS : VIEWING_FORMAT_IDS
+    if (!has(formats, fields.format)) errors.format = m.format
+    if (type === 'viewing' && fields.format !== 'viewing' && !has(DIRECTION_IDS, fields.direction)) {
+      errors.direction = m.direction
     }
     const date = fields.date ?? ''
-    if (!bookingDates(now).includes(date)) errors.date = leadMessages.date
+    if (!bookingDates(now).includes(date)) errors.date = m.date
     const time = fields.time ?? ''
-    if (!(BOOKING.slots as readonly string[]).includes(time)) errors.time = leadMessages.time
-    else if (!errors.date && !isSlotOpen(date, time, now)) errors.time = leadMessages.slotTaken
-    set('comment', validateComment(fields.comment))
+    if (!(BOOKING.slots as readonly string[]).includes(time)) errors.time = m.time
+    else if (!errors.date && !isSlotOpen(date, time, now)) errors.time = m.slotTaken
+    set('comment', validateComment(fields.comment, m))
   }
 
   return errors
 }
 
 /** Field labels for the error summary (copy-global §8.3) and the CRM note. */
-export function fieldLabel(name: LeadFieldName, channel?: string): string {
-  switch (name) {
-    case 'name':
-      return 'Имя'
-    case 'channel':
-      return 'Куда ответить'
-    case 'contact':
-      return isChannel(channel) ? contactLabels[channel] : 'Контакт'
-    case 'consent':
-      return 'Согласие на обработку данных'
-    case 'format':
-      return 'Формат'
-    case 'direction':
-      return 'Направление'
-    case 'date':
-      return 'Дата'
-    case 'time':
-      return 'Время на Пхукете'
-    case 'comment':
-      return 'Комментарий'
-    case 'goal':
-      return 'Цель'
-    case 'budget':
-      return 'Бюджет'
-    case 'timeline':
-      return 'Срок'
-    case 'district':
-      return 'Район'
-    default:
-      return name
-  }
+export function fieldLabel(name: LeadFieldName, f: FormsDict, channel?: string): string {
+  if (name === 'contact') return isChannel(channel) ? f.contactLabels[channel] : f.fields.contact
+  if (name === 'phoneCountry' || name === HONEYPOT_FIELD) return name
+  return f.fields[name]
 }
 
 /* ───────────────────────── Scoring (sales-strategy §8) ───────────────────────── */
@@ -447,34 +373,49 @@ export function scoreLead(type: LeadType, fields: Partial<Record<LeadFieldName, 
 }
 
 /** Human text of an option id, for notifications and thank-you screens. */
-export function optionLabel(field: LeadFieldName, id: string | undefined, type?: LeadType): string | undefined {
+export function optionLabel(
+  field: LeadFieldName,
+  id: string | undefined,
+  f: FormsDict,
+  locale: Locale,
+  type?: LeadType,
+): string | undefined {
   if (!id) return undefined
+  const o = formOptions(f, locale)
   const lists: Partial<Record<LeadFieldName, Option[]>> = {
-    channel: channelOptions,
-    direction: type === 'viewing' ? formDirections : quizDirections,
-    district: quizDistricts,
-    goal: quizGoals,
-    budget: quizBudgets,
-    timeline: quizTimelines,
-    format: type === 'viewing' ? viewingFormats : consultationFormats,
+    channel: o.channels,
+    direction: type === 'viewing' ? o.formDirections : o.quizDirections,
+    district: o.quizDistricts,
+    goal: o.goals,
+    budget: o.budgets,
+    timeline: o.timelines,
+    format: type === 'viewing' ? o.viewingFormats : o.consultationFormats,
   }
-  return lists[field]?.find((o) => o.id === id)?.label ?? id
+  return lists[field]?.find((option) => option.id === id)?.label ?? id
 }
 
 /* ───────────────────────── Reply time phrases (copy-global §5, §10) ───────────────────────── */
 
 /**
  * «до 16:55» in hours; «завтра до 5:15 по вашему времени» out of hours; «до 20:55 по Пхукету» /
- * «в начале рабочего дня» when the visitor zone is unknown. Client only (needs the visitor zone).
+ * «в начале рабочего дня» when the visitor zone is unknown (`common.reply.when`). Client only
+ * (needs the visitor zone).
  */
-export function replyByPhrase(now: number = Date.now(), tz: string | undefined = visitorTimeZone()): string {
+export function replyByPhrase(
+  texts: CommonDict['reply'],
+  locale: Locale,
+  now: number = Date.now(),
+  tz: string | undefined = visitorTimeZone(),
+): string {
+  const w = texts.when
   try {
-    const s = computeReplyState(now, tz, replyConfig())
-    if (!s.known) return s.open ? `до ${s.replyBy} по Пхукету` : 'в начале рабочего дня'
-    if (s.open) return `до ${s.replyBy}`
-    return `${s.tomorrow ? 'завтра' : 'сегодня'} до ${s.openReply} по вашему времени`
+    const s = computeReplyState(now, tz, replyConfig({ texts, locale }))
+    const values = { replyBy: s.replyBy, openReply: s.openReply, day: s.tomorrow ? texts.tomorrow : texts.today }
+    if (!s.known) return s.open ? fmt(w.openUnknownZone, values) : w.closedUnknownZone
+    if (s.open) return fmt(w.open, values)
+    return fmt(w.closed, values)
   } catch {
-    return 'в течение 15 минут'
+    return w.fallback
   }
 }
 
@@ -559,10 +500,16 @@ function timeoutSignal(ms: number): AbortSignal | undefined {
   return controller.signal
 }
 
+
+/** Words `submitLead` needs: the page's `forms` and `common.reply`. */
+export type LeadTexts = { forms: FormsDict; reply: CommonDict['reply'] }
+
 /** Sends a lead. Resolves, never throws. See the header of this file for the result. */
-export async function submitLead(payload: LeadPayload): Promise<LeadResult> {
-  const offline = (): LeadResult => ({ ok: false, reason: 'offline', error: leadMessages.offline })
-  const server = (): LeadResult => ({ ok: false, reason: 'server', error: leadMessages.server })
+export async function submitLead(payload: LeadPayload, t: LeadTexts): Promise<LeadResult> {
+  const locale = payload.locale ?? 'ru'
+  const m = t.forms.messages
+  const offline = (): LeadResult => ({ ok: false, reason: 'offline', error: m.offline })
+  const server = (): LeadResult => ({ ok: false, reason: 'server', error: fmt(m.server, { phone: contacts.phone.display }) })
 
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return offline()
   captureFirstTouch()
@@ -572,7 +519,7 @@ export async function submitLead(payload: LeadPayload): Promise<LeadResult> {
     response = await fetch(LEAD_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, meta: readLeadMeta() }),
+      body: JSON.stringify({ ...payload, locale, meta: readLeadMeta() }),
       signal: timeoutSignal(TIMEOUT_MS),
       cache: 'no-store',
     })
@@ -594,16 +541,16 @@ export async function submitLead(payload: LeadPayload): Promise<LeadResult> {
 
   if (response.status === 400 && data?.fieldErrors && Object.keys(data.fieldErrors).length) {
     const channel = payload.fields.channel
-    const labels = (Object.keys(data.fieldErrors) as LeadFieldName[]).map((k) => fieldLabel(k, channel))
-    return { ok: false, reason: 'validation', error: leadMessages.summary(labels), fieldErrors: data.fieldErrors }
+    const labels = (Object.keys(data.fieldErrors) as LeadFieldName[]).map((k) => fieldLabel(k, t.forms, channel))
+    return { ok: false, reason: 'validation', error: fmt(m.summary, { fields: labels.join(', ') }), fieldErrors: data.fieldErrors }
   }
 
   if (response.status === 409) {
-    return { ok: false, reason: 'duplicate', error: leadMessages.duplicate(replyByPhrase()) }
+    return { ok: false, reason: 'duplicate', error: fmt(m.duplicate, { when: replyByPhrase(t.reply, locale) }) }
   }
 
   if (response.status === 429) {
-    return { ok: false, reason: 'server', error: leadMessages.rateLimited }
+    return { ok: false, reason: 'server', error: fmt(m.rateLimited, { phone: contacts.phone.display }) }
   }
 
   return server()

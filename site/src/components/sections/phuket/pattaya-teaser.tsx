@@ -1,9 +1,9 @@
 import { Figure } from '@/components/ui/figure'
 import { TextLink } from '@/components/ui/text-link'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
 import { phuketPage } from './content'
 import { typo } from './text'
-
-const { pattaya } = phuketPage
 
 /**
  * Pattaya (art-direction §6 block 6): pattaya.jpg 3:2 in columns 1–7, the D3 line (an h2 by
@@ -11,11 +11,13 @@ const { pattaya } = phuketPage
  * 4:5 opens the right column: the city and what is bought in it.
  * Pattaya is not on Phuket, so its caption has no locator.
  */
-export function PattayaTeaser() {
+export function PattayaTeaser({ locale }: { locale: Locale }) {
+  const { pattaya } = getDictionary(locale).phuket
   return (
     <section aria-labelledby="pattaya-title" className="grid-site gap-y-10 pt-section lg:items-end">
       <div data-reveal="clip" className="col-span-full md:col-span-6 lg:col-span-7">
         <Figure
+          locale={locale}
           photo="pattaya"
           ratio="3x2"
           sizes="(min-width: 64rem) 58vw, (min-width: 48rem) 75vw, 100vw"
@@ -24,14 +26,14 @@ export function PattayaTeaser() {
       </div>
       <div data-reveal="fade" className="col-span-full md:col-span-6 lg:col-span-4 lg:col-start-9 lg:pb-10">
         <div className="mb-10 w-2/3 lg:w-3/4">
-          <Figure photo="pattayaCondo" ratio="4x5" sizes="(min-width: 64rem) 20vw, 66vw" />
+          <Figure locale={locale} photo="pattayaCondo" ratio="4x5" sizes="(min-width: 64rem) 20vw, 66vw" />
         </div>
         <h2 id="pattaya-title" className="type-d3 max-w-[18ch]">
-          {typo(pattaya.title)}
+          {typo(pattaya.title, locale)}
         </h2>
-        <p className="type-body mt-6 max-w-[40ch]">{typo(pattaya.text)}</p>
+        <p className="type-body mt-6 max-w-[40ch]">{typo(pattaya.text, locale)}</p>
         <p className="type-ui mt-8">
-          <TextLink href={pattaya.link.href}>{pattaya.link.label}</TextLink>
+          <TextLink href={phuketPage.pattaya.href}>{pattaya.link}</TextLink>
         </p>
       </div>
     </section>

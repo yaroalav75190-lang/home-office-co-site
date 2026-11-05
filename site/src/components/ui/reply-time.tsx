@@ -2,20 +2,12 @@
 
 import { clsx } from 'clsx'
 import { useSyncExternalStore } from 'react'
-import {
-  REPLY_FALLBACK,
-  REPLY_LEAD,
-  type ReplyVariant,
-  replyConfig,
-  replyTimeInstanceScript,
-  replyTimeText,
-  subscribeClock,
-  visitorTimeZone,
-} from '@/lib/reply-time'
+import { useLocale } from '@/i18n/client'
+import { type ReplyVariant, replyConfig, replyTimeInstanceScript, replyTimeText, subscribeClock, visitorTimeZone } from '@/lib/reply-time'
 import { InlineScript } from './inline-script'
 
 type ReplyTimeProps = {
-  /** In-hours sentence before «до HH:MM» (full variant), e.g. «Брокер пришлёт 2–3 варианта». */
+  /** In-hours sentence before «до HH:MM» (full variant), e.g. «Брокер пришлёт 2–3 варианта». Default: `common.reply.lead`. */
   lead?: string
   /** `full` (default) under buttons; `short` «Ответим до 16:55» for the menu and narrow columns. */
   variant?: ReplyVariant
@@ -29,18 +21,21 @@ type ReplyTimeProps = {
 }
 
 /**
- * «Напишите сейчас, и брокер ответит до 16:55», laterite (laterite-on-ink on ink fields).
+ * «Напишите сейчас, и брокер ответит до 16:55», laterite (laterite-on-ink on ink fields). Words and
+ * time format follow the page's locale (`common.reply`).
  *
  * - Hard load: an inline script fills the line during HTML parsing, so the first paint already
  *   shows the visitor's time and nothing swaps after hydration (no CLS).
  * - No JS: «Отвечаем в течение 15 минут» in the same reserved box.
  * - Client navigation: computed on render; refreshed every 30 s and when the tab is shown again.
  */
-export function ReplyTime({ lead = REPLY_LEAD, variant = 'full', reserve, as: Tag = 'p', className }: ReplyTimeProps) {
-  const config = replyConfig(lead, variant)
+export function ReplyTime({ lead, variant = 'full', reserve, as: Tag = 'p', className }: ReplyTimeProps) {
+  const { locale, t } = useLocale()
+  const texts = t.common.reply
+  const config = replyConfig({ texts, locale, lead, variant })
   const text = useSyncExternalStore(
     subscribeClock,
-    () => replyTimeText(Date.now(), visitorTimeZone(), config) ?? REPLY_FALLBACK,
+    () => replyTimeText(Date.now(), visitorTimeZone(), config) ?? texts.fallback,
     () => null,
   )
   const reserveSpace = reserve ?? variant === 'full'
@@ -54,7 +49,7 @@ export function ReplyTime({ lead = REPLY_LEAD, variant = 'full', reserve, as: Ta
         className,
       )}
     >
-      <span suppressHydrationWarning>{text ?? REPLY_FALLBACK}</span>
+      <span suppressHydrationWarning>{text ?? texts.fallback}</span>
       <InlineScript html={replyTimeInstanceScript(config)} />
     </Tag>
   )

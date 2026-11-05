@@ -1,16 +1,18 @@
 // «Ответим до 16:55» — the live reply-time line (art-direction §2, wording: copy-global §5).
 //
-// Broker hours and the promised 15 minutes come from `brokerHours` in `@/lib/site`.
+// Broker hours and the promised 15 minutes come from `brokerHours` in `@/lib/site`; the words are
+// `common.reply` of the page's dictionary, so the same code writes «до 16:55» and «by 4:55 pm».
 // Requests before closing count as in hours: 20:50 on Phuket → «ответит до 21:05» (copy-global §5, rule 1).
 
+import type { Locale } from '@/i18n/config'
+import { hour12, intlLocale } from '@/i18n/config'
+import type { CommonDict } from '@/i18n/ru/common'
 import { brokerHours } from '@/lib/site'
 
-/** No-JS line (copy-global §5). */
-export const REPLY_FALLBACK = `Отвечаем в течение ${brokerHours.replyMinutes} минут`
-/** In-hours sentence before «до {replyBy}». */
-export const REPLY_LEAD = 'Напишите сейчас, и брокер ответит'
-
 export type ReplyVariant = 'full' | 'short'
+
+/** Templates of the line (`common.reply` without the parts other components use). */
+export type ReplyTexts = Pick<CommonDict['reply'], 'full' | 'short' | 'today' | 'tomorrow'>
 
 export type ReplyConfig = {
   /** Broker time zone (IANA). */
@@ -20,20 +22,38 @@ export type ReplyConfig = {
   close: number
   /** Promised reply, minutes. */
   reply: number
-  /** In-hours sentence before «до HH:MM» (full variant). */
+  /** In-hours sentence before the time (full variant). */
   lead: string
   /** `short`: «Ответим до 16:55» for the menu and narrow columns. */
   variant: ReplyVariant
+  /** 12-hour clock with am/pm (English). */
+  h12?: boolean
+  /** Templates; the inline boot script fills them in for its per-instance scripts. */
+  t?: ReplyTexts
 }
 
-export function replyConfig(lead: string = REPLY_LEAD, variant: ReplyVariant = 'full'): ReplyConfig {
+export function replyConfig({
+  texts,
+  locale = 'ru',
+  lead,
+  variant = 'full',
+}: {
+  /** `common.reply` of the page's dictionary. */
+  texts?: CommonDict['reply']
+  locale?: Locale
+  /** In-hours sentence; defaults to `texts.lead`. */
+  lead?: string
+  variant?: ReplyVariant
+} = {}): ReplyConfig {
   return {
     tz: brokerHours.timeZone,
     open: brokerHours.openMinutes,
     close: brokerHours.closeMinutes,
     reply: brokerHours.replyMinutes,
-    lead,
+    lead: lead ?? texts?.lead ?? '',
     variant,
+    ...(hour12[locale] ? { h12: true } : {}),
+    ...(texts ? { t: { full: texts.full, short: texts.short, today: texts.today, tomorrow: texts.tomorrow } } : {}),
   }
 }
 
@@ -65,6 +85,9 @@ export type ReplyState = {
  * <head> by `replyTimeBootScript()` so the line is right before first paint.
  */
 export function computeReplyState(now: number, visitorTz: string | undefined, c: ReplyConfig): ReplyState {
+  const hm = function (h: number, minute: string) {
+    return c.h12 ? (h % 12 || 12) + ':' + minute + (h < 12 ? ' am' : ' pm') : h + ':' + minute
+  }
   const read = function (ms: number, zone: string) {
     const parts = new Intl.DateTimeFormat('ru-RU', {
       timeZone: zone,
@@ -78,10 +101,10 @@ export function computeReplyState(now: number, visitorTz: string | undefined, c:
     const o: Record<string, string> = {}
     for (let i = 0; i < parts.length; i++) o[parts[i].type] = parts[i].value
     const h = Number(o.hour) % 24
-    return { hm: h + ':' + o.minute, mins: h * 60 + Number(o.minute), day: o.year + o.month + o.day }
+    return { hm: hm(h, o.minute), mins: h * 60 + Number(o.minute), day: o.year + o.month + o.day }
   }
   const clock = function (m: number) {
-    return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0')
+    return hm(Math.floor(m / 60), String(m % 60).padStart(2, '0'))
   }
   let zone = c.tz
   let known = false
@@ -114,25 +137,33 @@ export function computeReplyState(now: number, visitorTz: string | undefined, c:
   }
 }
 
-/** The sentence for a state (copy-global §5 table). Self-contained, inlined like the above. */
+/**
+ * The sentence for a state (copy-global §5 table), from the templates in `c.t`. Self-contained,
+ * inlined like the above.
+ */
 export function formatReplyText(s: ReplyState, c: ReplyConfig): string {
-  const day = s.tomorrow ? 'завтра' : 'сегодня'
+  const t = c.t as ReplyTexts
+  const v: Record<string, string> = {
+    lead: c.lead,
+    replyBy: s.replyBy,
+    openReply: s.openReply,
+    openLocal: s.openLocal,
+    open: s.openText,
+    close: s.closeText,
+    day: s.tomorrow ? t.tomorrow : t.today,
+  }
+  const f = function (template: string) {
+    return template.replace(/\{(\w+)\}/g, function (m: string, k: string) {
+      return k in v ? v[k] : m
+    })
+  }
   if (c.variant === 'short') {
-    if (s.open) return 'Ответим до ' + s.replyBy + (s.known ? '' : ' по Пхукету')
-    return s.known ? 'Ответим ' + day + ' до ' + s.openReply : 'Ответим в начале рабочего дня'
+    if (s.open) return f(s.known ? t.short.open : t.short.openUnknownZone)
+    return s.known ? f(t.short.closed) : t.short.closedUnknownZone
   }
-  if (!s.known) {
-    return s.open
-      ? c.lead + ' до ' + s.replyBy + ' по Пхукету'
-      : 'Брокер на связи с ' + s.openText + ' до ' + s.closeText + ' по Пхукету. Ответим в начале рабочего дня'
-  }
-  if (s.open) return c.lead + ' до ' + s.replyBy + (s.sameZone ? '. У вас и на Пхукете одно время' : '')
-  if (s.sameZone) {
-    return 'Брокер на связи с ' + s.openText + ', у вас и на Пхукете одно время. Ответим ' + day + ' до ' + s.openReply
-  }
-  return (
-    'Брокер на связи с ' + s.openText + ' по Пхукету, у вас это ' + s.openLocal + '. Ответим ' + day + ' до ' + s.openReply
-  )
+  if (!s.known) return f(s.open ? t.full.openUnknownZone : t.full.closedUnknownZone)
+  if (s.open) return f(s.sameZone ? t.full.openSameZone : t.full.open)
+  return f(s.sameZone ? t.full.closedSameZone : t.full.closed)
 }
 
 /** Reply line for a moment and a visitor zone; `null` if anything fails (the fallback stays). */
@@ -153,13 +184,18 @@ export function visitorTimeZone(): string | undefined {
   }
 }
 
+const scriptJson = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c')
+
 /**
- * Defines `window.__hocReplyTime(now, tz, config)` for the per-instance inline scripts.
- * Rendered once in <head> (app/layout.tsx).
+ * Defines `window.__hocReplyTime(now, tz, config)` for the per-instance inline scripts, with the
+ * page's templates built in. Rendered once in <head> (site shell).
  */
-export function replyTimeBootScript(): string {
+export function replyTimeBootScript(texts: CommonDict['reply']): string {
+  const t: ReplyTexts = { full: texts.full, short: texts.short, today: texts.today, tomorrow: texts.tomorrow }
   return (
-    'window.__hocReplyTime=function(n,z,c){var s=(' +
+    'window.__hocReplyTime=function(n,z,c){c.t=c.t||' +
+    scriptJson(t) +
+    ';var s=(' +
     computeReplyState.toString() +
     ')(n,z,c);return(' +
     formatReplyText.toString() +
@@ -169,17 +205,25 @@ export function replyTimeBootScript(): string {
 
 /** Per-instance script: fills the previous sibling element with the live line before paint. */
 export function replyTimeInstanceScript(c: ReplyConfig): string {
+  // The templates are in the boot script already; only the instance's own settings go here.
+  const own: ReplyConfig = { tz: c.tz, open: c.open, close: c.close, reply: c.reply, lead: c.lead, variant: c.variant }
+  if (c.h12) own.h12 = true
   return (
     '(function(s){try{var e=s&&s.previousElementSibling,f=window.__hocReplyTime;if(!e||!f)return;' +
     'var z;try{z=Intl.DateTimeFormat().resolvedOptions().timeZone}catch(_){}' +
     'e.textContent=f(Date.now(),z,' +
-    JSON.stringify(c).replace(/</g, '\\u003c') +
+    scriptJson(own) +
     ')}catch(_){}})(document.currentScript)'
   )
 }
 
-/** Wall-clock «16:40» for a zone; hours without a leading zero, as in «9:05». */
-export function formatClock(ms: number, timeZone: string): string {
+/** «16:40» / «4:40 pm» from an hour (0–23) and minutes. */
+function formatHm(h: number, minute: string, locale: Locale): string {
+  if (hour12[locale]) return `${h % 12 || 12}:${minute} ${h < 12 ? 'am' : 'pm'}`
+  return `${h}:${minute}`
+}
+
+function zoneHourMinute(ms: number, timeZone: string): { hour: number; minute: string } {
   const parts = new Intl.DateTimeFormat('ru-RU', {
     timeZone,
     hour: '2-digit',
@@ -188,13 +232,34 @@ export function formatClock(ms: number, timeZone: string): string {
   }).formatToParts(new Date(ms))
   const hour = Number(parts.find((p) => p.type === 'hour')?.value ?? 0) % 24
   const minute = parts.find((p) => p.type === 'minute')?.value ?? '00'
-  return `${hour}:${minute}`
+  return { hour, minute }
 }
 
-/** «07:00»: slot tiles stand in a column and line up on the digits (copy-global §5, rule 3). */
-export function formatClockPadded(ms: number, timeZone: string): string {
-  const [h, m] = formatClock(ms, timeZone).split(':')
-  return `${h.padStart(2, '0')}:${m}`
+/** Wall-clock «16:40» for a zone; hours without a leading zero, as in «9:05». English: «4:40 pm». */
+export function formatClock(ms: number, timeZone: string, locale: Locale = 'ru'): string {
+  const { hour, minute } = zoneHourMinute(ms, timeZone)
+  return formatHm(hour, minute, locale)
+}
+
+/** A 24-hour «16:40» shown in the locale's format: «16:40» or «4:40 pm». */
+export function localeClock(hm24: string, locale: Locale): string {
+  const [h, m] = hm24.split(':')
+  return formatHm(Number(h), m, locale)
+}
+
+/**
+ * «07:00»: slot tiles stand in a column and line up on the digits (copy-global §5, rule 3).
+ * English keeps its 12-hour form, «7:00 am».
+ */
+export function formatClockPadded(ms: number, timeZone: string, locale: Locale = 'ru'): string {
+  const { hour, minute } = zoneHourMinute(ms, timeZone)
+  if (hour12[locale]) return formatHm(hour, minute, locale)
+  return `${String(hour).padStart(2, '0')}:${minute}`
+}
+
+/** Placeholder of the same width as a live clock before hydration: «00:00» / «00:00 pm». */
+export function clockPlaceholder(locale: Locale = 'ru'): string {
+  return hour12[locale] ? '00:00 pm' : '00:00'
 }
 
 /**
@@ -222,13 +287,18 @@ export function brokerToday(now: number = Date.now()): string {
  * Broker hours in another fixed-offset zone, for static lines like the footer's
  * «с 9:00 до 21:00 по Пхукету, это с 5:00 до 17:00 по Москве» (Moscow is UTC+3 all year).
  */
-export function brokerHoursIn(utcOffsetMinutes: number): { open: string; close: string } {
+export function brokerHoursIn(utcOffsetMinutes: number, locale: Locale = 'ru'): { open: string; close: string } {
   const shift = utcOffsetMinutes - brokerHours.utcOffsetMinutes
   const fmt = (m: number) => {
     const v = (((m + shift) % 1440) + 1440) % 1440
-    return `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`
+    return formatHm(Math.floor(v / 60), String(v % 60).padStart(2, '0'), locale)
   }
   return { open: fmt(brokerHours.openMinutes), close: fmt(brokerHours.closeMinutes) }
+}
+
+/** «12 ноября» / «November 12» / «12 de noviembre» for a date in a zone. */
+export function formatDayMonth(ms: number, timeZone: string, locale: Locale = 'ru'): string {
+  return new Intl.DateTimeFormat(intlLocale[locale], { day: 'numeric', month: 'long', timeZone }).format(ms)
 }
 
 /** Shared 30-second ticker for live clocks (useSyncExternalStore subscribe). */

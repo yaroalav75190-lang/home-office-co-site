@@ -20,6 +20,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { setCoastDrawMode } from '@/components/coast/draw'
+import { useLocale } from '@/i18n/client'
+import { fmt } from '@/i18n/format'
 import { gsap, ScrollTrigger } from '@/lib/gsap'
 import { HERO_ENTRY_MS, HERO_INTRO_ATTR } from './boot'
 import { segmentDrawMode } from './coast-draw'
@@ -73,6 +75,8 @@ function playHeroEntry(main: HTMLElement) {
 export function TransitionProvider({ art, children }: TransitionProviderProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const { locale, t } = useLocale()
+  const curtainWords = t.common.curtain
   const curtainRef = useRef<HTMLDivElement>(null)
   const pending = useRef<{ path: string; resolve: () => void } | null>(null)
   const [curtain, setCurtain] = useState<CurtainState>({ name: '', time: '' })
@@ -108,7 +112,7 @@ export function TransitionProvider({ art, children }: TransitionProviderProps) {
       document.documentElement.removeAttribute(HERO_INTRO_ATTR)
 
       const target = new URL(href, window.location.href)
-      const meta = curtainFor(target.pathname)
+      const meta = curtainFor(target.pathname, curtainWords, locale)
       const artKey = meta.art && art?.[meta.art] ? meta.art : undefined
       // Render the curtain content before measuring and animating it.
       flushSync(() => setCurtain({ name: meta.name, time: meta.time(Date.now()), art: artKey }))
@@ -195,10 +199,10 @@ export function TransitionProvider({ art, children }: TransitionProviderProps) {
       ScrollTrigger.refresh()
       if (ANNOUNCE) {
         setAnnouncement('')
-        window.setTimeout(() => setAnnouncement(`Открыта страница: ${meta.name}`), 50)
+        window.setTimeout(() => setAnnouncement(fmt(curtainWords.opened, { name: meta.name })), 50)
       }
     },
-    [art, router],
+    [art, router, curtainWords, locale],
   )
 
   useEffect(() => registerTransitionRunner((req) => void run(req)), [run])

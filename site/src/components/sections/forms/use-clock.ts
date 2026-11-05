@@ -5,7 +5,11 @@
 // `null` and components render a same-size placeholder until then (no hydration mismatch).
 // Snapshots are cached per minute, so `useSyncExternalStore` sees a stable value.
 
-import { useSyncExternalStore } from 'react'
+import { useCallback, useSyncExternalStore } from 'react'
+import { useLocale } from '@/i18n/client'
+import type { Locale } from '@/i18n/config'
+import { fmt } from '@/i18n/format'
+import type { CommonDict } from '@/i18n/ru/common'
 import { type ReplyState, computeReplyState, replyConfig, subscribeClock, visitorTimeZone } from '@/lib/reply-time'
 
 const serverNull = () => null
@@ -22,19 +26,21 @@ export function useMinute(): number | null {
   return useSyncExternalStore(subscribeClock, minuteSnapshot, serverNull)
 }
 
-let replyCache: { minute: number; tz: string | undefined; state: ReplyState } | null = null
-function replySnapshot(): ReplyState {
+let replyCache: { minute: number; tz: string | undefined; locale: Locale; state: ReplyState } | null = null
+function replySnapshot(locale: Locale): ReplyState {
   const minute = Math.floor(Date.now() / 60000) * 60000
   const tz = visitorTimeZone()
-  if (!replyCache || replyCache.minute !== minute || replyCache.tz !== tz) {
-    replyCache = { minute, tz, state: computeReplyState(minute, tz, replyConfig()) }
+  if (!replyCache || replyCache.minute !== minute || replyCache.tz !== tz || replyCache.locale !== locale) {
+    replyCache = { minute, tz, locale, state: computeReplyState(minute, tz, replyConfig({ locale })) }
   }
   return replyCache.state
 }
 
-/** Reply-time state (copy-global §5 variables) for the visitor; null on the server. */
+/** Reply-time state (copy-global §5 variables) for the visitor, times in the page's format; null on the server. */
 export function useReplyState(): ReplyState | null {
-  return useSyncExternalStore(subscribeClock, replySnapshot, serverNull)
+  const { locale } = useLocale()
+  const snapshot = useCallback(() => replySnapshot(locale), [locale])
+  return useSyncExternalStore(subscribeClock, snapshot, serverNull)
 }
 
 const noop = () => () => {}
@@ -47,10 +53,12 @@ export function useVisitorZone(): string | null {
 
 /**
  * «до 16:55» · «завтра до 5:15 по вашему времени» · «до 20:55 по Пхукету» · «в начале рабочего дня».
- * The «when» part of every thank-you sentence (copy-global §10).
+ * The «when» part of every thank-you sentence (copy-global §10), from `common.reply.when`.
  */
-export function replyWhen(s: ReplyState): string {
-  if (!s.known) return s.open ? `до ${s.replyBy} по Пхукету` : 'в начале рабочего дня'
-  if (s.open) return `до ${s.replyBy}`
-  return `${s.tomorrow ? 'завтра' : 'сегодня'} до ${s.openReply} по вашему времени`
+export function replyWhen(s: ReplyState, texts: CommonDict['reply']): string {
+  const w = texts.when
+  const values = { replyBy: s.replyBy, openReply: s.openReply, day: s.tomorrow ? texts.tomorrow : texts.today }
+  if (!s.known) return s.open ? fmt(w.openUnknownZone, values) : w.closedUnknownZone
+  if (s.open) return fmt(w.open, values)
+  return fmt(w.closed, values)
 }

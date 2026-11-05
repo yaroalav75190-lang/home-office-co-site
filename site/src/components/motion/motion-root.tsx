@@ -1,6 +1,6 @@
 'use client'
 
-// MotionRoot: mounted once in app/layout.tsx. On every route it scans <main> (and the footer) for
+// MotionRoot: mounted once in the site shell (components/layout/site-shell.tsx). On every route it scans <main> (and the footer) for
 // the motion hooks that pages put in their markup (docs/BUILD_PLAN.md «Хуки моушна») and animates
 // them (art-direction §5, edition 2). Everything lives in one useGSAP context keyed on the
 // pathname, so all tweens, ScrollTriggers, SplitTexts and pins of the previous page are reverted

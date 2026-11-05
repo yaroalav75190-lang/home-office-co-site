@@ -5,7 +5,11 @@
 
 import { TransitionLink as Link } from '@/components/motion/transition-link'
 import type { ReactNode } from 'react'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
+import { fmt } from '@/i18n/format'
 import {
+  MOSCOW_UTC_OFFSET_MINUTES,
   brokerHours,
   consultationLink,
   contacts,
@@ -14,7 +18,6 @@ import {
   destinations,
   footerNav,
   legalLinks,
-  requisites,
   resolveLink,
   site,
 } from '@/lib/site'
@@ -23,15 +26,16 @@ import { splitStubs } from '@/components/sections/shared/stub'
 import { LocalTime } from '@/components/ui/local-time'
 
 type FooterProps = {
+  locale: Locale
   variant?: 'full' | 'compact'
   /** Columns 1–6, bleeding off the left edge: photo (`<Figure photo="sunset" ratio="4x5" />`) or coastline. */
   media?: ReactNode
 }
 
-const MOSCOW_OFFSET = 3 * 60
-
-export function Footer({ variant = 'full', media }: FooterProps) {
+export function Footer({ locale, variant = 'full', media }: FooterProps) {
   const year = site.year
+  const t = getDictionary(locale).common
+  const labels = t.nav
 
   if (variant === 'compact') {
     return (
@@ -44,7 +48,7 @@ export function Footer({ variant = 'full', media }: FooterProps) {
             {legalLinks.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="link-underline">
-                  {item.label}
+                  {labels[item.id]}
                 </Link>
               </li>
             ))}
@@ -54,19 +58,19 @@ export function Footer({ variant = 'full', media }: FooterProps) {
     )
   }
 
-  const moscow = brokerHoursIn(MOSCOW_OFFSET)
-  const phuket = brokerHoursIn(brokerHours.utcOffsetMinutes)
+  const moscow = brokerHoursIn(MOSCOW_UTC_OFFSET_MINUTES, locale)
+  const phuket = brokerHoursIn(brokerHours.utcOffsetMinutes, locale)
 
   return (
     <footer data-surface="ink" className="pt-section pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-16">
       <div className="grid-site">
-        <nav aria-label="Направления" className="col-span-full grid grid-cols-subgrid">
+        <nav aria-label={t.footer.destinationsLabel} className="col-span-full grid grid-cols-subgrid">
           <ul role="list" className="col-span-full grid grid-cols-subgrid gap-y-4">
             {destinations.map((d) => (
               <li key={d.id} className="col-span-2 md:col-span-4 lg:col-span-3">
                 <Link href={destinationHref(d)} className="type-d3 inline-flex flex-wrap items-baseline gap-x-3 py-1">
-                  <span className="link-reveal">{d.name}</span>
-                  <LocalTime timeZone={d.timeZone} label={d.timeLabel} className="text-on-ink-muted" />
+                  <span className="link-reveal">{t.destinations[d.id].name}</span>
+                  <LocalTime timeZone={d.timeZone} label={t.destinations[d.id].timeLabel} className="text-on-ink-muted" />
                 </Link>
               </li>
             ))}
@@ -80,10 +84,10 @@ export function Footer({ variant = 'full', media }: FooterProps) {
         </div>
 
         <div className="col-span-full mt-heading md:col-span-4 lg:col-span-5 lg:col-start-8">
-          <nav aria-label="Разделы">
+          <nav aria-label={t.footer.sectionsLabel}>
             <ul role="list" className="flex flex-col gap-2">
               {footerNav.map((item) => {
-                const link = resolveLink(item)
+                const link = resolveLink(item, labels)
                 if (!link) return null
                 return (
                   <li key={item.href}>
@@ -98,17 +102,17 @@ export function Footer({ variant = 'full', media }: FooterProps) {
 
           <div className="mt-12">
             <Link href={consultationLink.href} className="type-ui link-underline">
-              {consultationLink.label}
+              {labels[consultationLink.id]}
             </Link>
             <ul role="list" className="type-ui mt-6 flex flex-col gap-1">
               <li>
                 <a href={contacts.telegram.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center">
-                  <span className="link-reveal">{contacts.telegram.label}</span>
+                  <span className="link-reveal">{t.channels.telegram.label}</span>
                 </a>
               </li>
               <li>
                 <a href={contacts.whatsapp.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center">
-                  <span className="link-reveal">{contacts.whatsapp.label}</span>
+                  <span className="link-reveal">{t.channels.whatsapp.label}</span>
                 </a>
               </li>
               {/* A value flagged `placeholder` in @/lib/site shows the channel name as the link and
@@ -116,7 +120,7 @@ export function Footer({ variant = 'full', media }: FooterProps) {
               {[contacts.phone, contacts.email].map((c) => (
                 <li key={c.id} className="flex flex-wrap items-baseline gap-x-3">
                   <a href={c.href} className="nums inline-flex min-h-11 items-center">
-                    <span className="link-reveal">{c.placeholder ? c.name : c.display}</span>
+                    <span className="link-reveal">{c.placeholder ? t.channels[c.id].name : c.display}</span>
                   </a>
                   {c.placeholder ? (
                     <span className="type-small text-on-ink-muted">{splitStubs(c.display).notes.join(' ')}</span>
@@ -125,28 +129,28 @@ export function Footer({ variant = 'full', media }: FooterProps) {
               ))}
             </ul>
             <p className="type-small nums mt-4 max-w-[48ch] text-on-ink-muted">
-              Брокеры на связи с {phuket.open} до {phuket.close} по Пхукету, это с {moscow.open} до {moscow.close} по Москве
+              {fmt(t.footer.hours, { open: phuket.open, close: phuket.close, mskOpen: moscow.open, mskClose: moscow.close })}
             </p>
           </div>
 
-          <p className="type-small mt-12 max-w-[48ch] text-on-ink-muted">{requisites.text}</p>
+          <p className="type-small mt-12 max-w-[48ch] text-on-ink-muted">{t.footer.requisites}</p>
 
           <ul role="list" className="type-small mt-6 flex flex-col gap-2 text-on-ink-muted">
             {legalLinks.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="link-underline">
-                  {item.label}
+                  {labels[item.id]}
                 </Link>
               </li>
             ))}
             <li>
               <Link href={creditsLinks.photos.href} className="link-underline">
-                {creditsLinks.photos.label}
+                {labels[creditsLinks.photos.id]}
               </Link>
             </li>
             <li>
               <a href={creditsLinks.maps.href} target="_blank" rel="noopener noreferrer" className="link-underline">
-                {creditsLinks.maps.label}
+                {labels[creditsLinks.maps.id]}
               </a>
             </li>
             <li>

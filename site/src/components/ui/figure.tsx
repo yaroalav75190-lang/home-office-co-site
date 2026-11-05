@@ -1,7 +1,9 @@
 import { clsx } from 'clsx'
 import Image, { getImageProps } from 'next/image'
 import type { ReactNode } from 'react'
-import { getPhoto, photoMeta, type PhotoKey, type PhotoRatio, type Ratio } from '@/lib/photos'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
+import { getPhoto, type PhotoKey, type PhotoRatio, type Ratio } from '@/lib/photos'
 
 const aspect: Record<Ratio, string> = {
   '21x9': 'aspect-[21/9]',
@@ -19,6 +21,8 @@ const aspectMd: Record<Ratio, string> = {
 }
 
 export type FigureProps<K extends PhotoKey> = {
+  /** Language of the default alt text and caption (`photos` in the dictionary). */
+  locale: Locale
   photo: K
   /** Crop from `@/lib/photos`; only ratios that exist for this photo type-check. */
   ratio: PhotoRatio<K>
@@ -26,9 +30,9 @@ export type FigureProps<K extends PhotoKey> = {
   mobileRatio?: PhotoRatio<K>
   /** Locator 24 px before the caption: `<Locator place="kata-noi" />` from `@/components/coast`. */
   locator?: ReactNode
-  /** Caption under the photo. Defaults to `photoMeta[photo].caption`; `null` hides it. */
+  /** Caption under the photo. Defaults to the dictionary caption of the photo; `null` hides it. */
   caption?: ReactNode | null
-  /** Overrides `photoMeta[photo].alt`. Use "" only for a purely decorative repeat. */
+  /** Overrides the dictionary alt text of the photo. Use "" only for a purely decorative repeat. */
   alt?: string
   /** `sizes` for srcset; defaults to full width. Pass the real layout width, e.g. "(min-width: 64rem) 33vw, 100vw". */
   sizes?: string
@@ -48,6 +52,7 @@ export type FigureProps<K extends PhotoKey> = {
  * locator dot pulse; motion.css «Figures alive on hover»).
  */
 export function Figure<K extends PhotoKey>({
+  locale,
   photo,
   ratio,
   mobileRatio,
@@ -60,7 +65,7 @@ export function Figure<K extends PhotoKey>({
   mediaClassName,
   imageClassName,
 }: FigureProps<K>) {
-  const meta = photoMeta[photo]
+  const meta = getDictionary(locale).photos[photo]
   const altText = alt ?? meta.alt
   const captionContent = caption === undefined ? meta.caption : caption
   const asset = getPhoto(photo, ratio)

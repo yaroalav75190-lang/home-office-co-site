@@ -2,6 +2,8 @@
 
 import { clsx } from 'clsx'
 import { type ReactNode, useId, useSyncExternalStore } from 'react'
+import { useLocale } from '@/i18n/client'
+import { fmt } from '@/i18n/format'
 import { brokerHours } from '@/lib/site'
 import { brokerToday, brokerWallTimeToInstant, formatClockPadded, visitorTimeZone } from '@/lib/reply-time'
 import { FieldError } from './field'
@@ -15,9 +17,9 @@ export type SlotPickerProps = {
   slots: string[]
   /** Date of the meeting (YYYY-MM-DD, Phuket calendar) for a DST-correct conversion. Default: today. */
   date?: string
-  /** Legend; copy-global §8.2: «Время на Пхукете». */
+  /** Legend; default `forms.slots.legend` (copy-global §8.2: «Время на Пхукете»). */
   label?: ReactNode
-  /** copy-global §8.2: «Рядом показываем ваше время». */
+  /** Default `forms.slots.hint` (copy-global §8.2: «Рядом показываем ваше время»); `null` hides it. */
   hint?: ReactNode
   error?: ReactNode
   disabledSlots?: string[]
@@ -37,8 +39,8 @@ export function SlotPicker({
   name,
   slots,
   date,
-  label = 'Время на Пхукете',
-  hint = 'Рядом показываем ваше время',
+  label: labelProp,
+  hint: hintProp,
   error,
   disabledSlots = [],
   value,
@@ -48,6 +50,10 @@ export function SlotPicker({
   className,
 }: SlotPickerProps) {
   const id = useId()
+  const { locale, t } = useLocale()
+  const words = t.forms.slots
+  const label = labelProp ?? words.legend
+  const hint = hintProp === undefined ? words.hint : hintProp
   const hintId = `${id}-hint`
   const errorId = `${id}-error`
   const zone = useSyncExternalStore(noop, () => visitorTimeZone() ?? null, () => null)
@@ -67,8 +73,8 @@ export function SlotPicker({
       <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
         {slots.map((slot) => {
           const instant = brokerWallTimeToInstant(day, slot)
-          const local = zone ? formatClockPadded(instant, zone) : null
-          const phuket = formatClockPadded(instant, brokerHours.timeZone)
+          const local = zone ? formatClockPadded(instant, zone, locale) : null
+          const phuket = formatClockPadded(instant, brokerHours.timeZone, locale)
           const same = local !== null && local === phuket
           const disabled = disabledSlots.includes(slot)
           return (
@@ -94,12 +100,10 @@ export function SlotPicker({
                   ? { checked: value === slot, onChange: () => onChange?.(slot) }
                   : { defaultChecked: defaultValue === slot, onChange: () => onChange?.(slot) })}
               />
-              <span className="type-ui nums">
-                {phuket} на Пхукете{same ? ' и у вас' : ''}
-              </span>
+              <span className="type-ui nums">{fmt(same ? words.phuketAndYou : words.phuket, { time: phuket })}</span>
               {local !== null && !same ? (
                 <span className="type-small nums mt-0.5 text-ink-muted group-has-checked:text-on-ink-muted on-ink:text-on-ink-muted on-ink:group-has-checked:text-ink-muted">
-                  {local} у вас
+                  {fmt(words.local, { time: local })}
                 </span>
               ) : null}
             </label>

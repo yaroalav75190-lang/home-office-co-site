@@ -12,6 +12,8 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { ConsentCheckbox, TextField } from '@/components/ui/field'
 import { SlotPicker } from '@/components/ui/slot-picker'
+import { useLocale } from '@/i18n/client'
+import { fmt } from '@/i18n/format'
 import {
   BOOKING,
   type ConsultFormatId,
@@ -19,13 +21,10 @@ import {
   type LeadFieldName,
   type ViewingFormatId,
   closedSlots,
-  consultationFormats,
   fieldLabel,
-  formDirections,
-  leadMessages,
+  formOptions,
   validateComment,
   validateName,
-  viewingFormats,
 } from '@/lib/lead'
 import {
   ChannelContact,
@@ -58,6 +57,10 @@ const ORDER: Record<Kind, LeadFieldName[]> = {
 
 export function BookingForm({ kind, page }: { kind: Kind; page: string }) {
   const p = kind === 'consultation' ? 'konsultaciya' : 'zapis'
+  const { locale, t } = useLocale()
+  const f = t.forms
+  const m = f.messages
+  const options = formOptions(f, locale)
   const [name, setName] = useState('')
   const [cc, setCc] = useState<ChannelContactState>(emptyChannelContact)
   const [format, setFormat] = useState<Format | ''>('')
@@ -104,25 +107,25 @@ export function BookingForm({ kind, page }: { kind: Kind; page: string }) {
 
   const validateAll = (): FieldErrors => {
     const e: FieldErrors = {}
-    const nameError = validateName(name)
+    const nameError = validateName(name, m)
     if (nameError) e.name = nameError
-    Object.assign(e, validateChannelContact(cc))
-    if (!format) e.format = leadMessages.format
-    if (needsDirection && !direction) e.direction = leadMessages.direction
-    if (!date) e.date = leadMessages.date
-    if (!time) e.time = leadMessages.time
-    else if (date && closedSlots(date).includes(time)) e.time = leadMessages.slotTaken
-    const commentError = validateComment(comment)
+    Object.assign(e, validateChannelContact(cc, m))
+    if (!format) e.format = m.format
+    if (needsDirection && !direction) e.direction = m.direction
+    if (!date) e.date = m.date
+    if (!time) e.time = m.time
+    else if (date && closedSlots(date).includes(time)) e.time = m.slotTaken
+    const commentError = validateComment(comment, m)
     if (commentError) e.comment = commentError
-    if (!consent) e.consent = leadMessages.consent
+    if (!consent) e.consent = m.consent
     return e
   }
 
   const showErrors = (e: FieldErrors) => {
     setErrors(e)
     const items = ORDER[kind]
-      .filter((f) => e[f])
-      .map((f) => ({ label: fieldLabel(f, cc.channel), targetId: targetId(f) }))
+      .filter((field) => e[field])
+      .map((field) => ({ label: fieldLabel(field, f, cc.channel), targetId: targetId(field) }))
     setSummary(items)
     setFocusTarget(items.length ? 'summary' : null)
   }
@@ -164,11 +167,11 @@ export function BookingForm({ kind, page }: { kind: Kind; page: string }) {
   const nameField = (
     <TextField
       id={targetId('name')}
-      label="Имя"
+      label={f.fields.name}
       autoComplete="name"
       value={name}
       error={errors.name}
-      validate={validateName}
+      validate={(v) => validateName(v, m)}
       onChange={(e) => {
         clear('name')
         setName(e.currentTarget.value)
@@ -185,8 +188,8 @@ export function BookingForm({ kind, page }: { kind: Kind; page: string }) {
       <OptionTiles
         id={targetId('format')}
         name={`${p}-format`}
-        legend="Формат"
-        options={consultationFormats}
+        legend={f.booking.format}
+        options={options.consultationFormats}
         value={format as ConsultFormatId | ''}
         columns="grid-cols-1 md:grid-cols-3"
         error={errors.format}
@@ -199,9 +202,9 @@ export function BookingForm({ kind, page }: { kind: Kind; page: string }) {
       <OptionTiles
         id={targetId('format')}
         name={`${p}-format`}
-        legend="Формат"
+        legend={f.booking.format}
         variant="tile"
-        options={viewingFormats}
+        options={options.viewingFormats}
         value={format as ViewingFormatId | ''}
         columns="grid-cols-1 md:grid-cols-2"
         error={errors.format}
@@ -248,12 +251,12 @@ export function BookingForm({ kind, page }: { kind: Kind; page: string }) {
       id={targetId('comment')}
       multiline
       rows={3}
-      label={kind === 'consultation' ? 'Что уже выбрали' : 'Что обсудить'}
+      label={kind === 'consultation' ? f.booking.commentConsultation : f.booking.commentViewing}
       optional
-      placeholder={kind === 'consultation' ? 'Название проекта или ссылка' : 'Например, виллы у моря до 300 тыс. $'}
+      placeholder={kind === 'consultation' ? f.booking.placeholderConsultation : f.booking.placeholderViewing}
       value={comment}
       error={errors.comment}
-      validate={validateComment}
+      validate={(v) => validateComment(v, m)}
       onChange={(e) => {
         clear('comment')
         setComment(e.currentTarget.value)
@@ -280,8 +283,8 @@ export function BookingForm({ kind, page }: { kind: Kind; page: string }) {
             <OptionTiles
               id={targetId('direction')}
               name={`${p}-direction`}
-              legend="Направление"
-              options={formDirections}
+              legend={f.booking.direction}
+              options={options.formDirections}
               value={direction}
               columns="grid-cols-2 md:grid-cols-3"
               error={errors.direction}
@@ -312,11 +315,11 @@ export function BookingForm({ kind, page }: { kind: Kind; page: string }) {
       {failure ? <SubmitFailure result={failure} onRetry={() => formRef.current?.requestSubmit()} busy={busy} failureRef={failureRef} /> : null}
 
       <div className="flex flex-col items-start gap-3">
-        <SubmitButton label={kind === 'consultation' ? 'Записаться на консультацию' : 'Записаться'} busy={busy} />
+        <SubmitButton label={kind === 'consultation' ? f.booking.submitConsultation : f.booking.submitViewing} busy={busy} />
         {kind === 'viewing' ? (
           <LiveLine
-            render={(s) => `Брокер подтвердит запись ${replyWhen(s)}`}
-            fallback="Брокер подтвердит запись в течение 15 минут"
+            render={(s) => fmt(f.booking.confirmLine, { when: replyWhen(s, t.common.reply) })}
+            fallback={f.booking.confirmFallback}
           />
         ) : null}
         <ChannelNote />

@@ -29,19 +29,24 @@
 //   all of that goes into the deal note. Also: the 10-minute «не взяли» reminder to Иван (a
 //   Salesbot or digital pipeline rule in amoCRM, not this code).
 
-import {
-  type LeadFieldName,
-  type LeadMeta,
-  type LeadType,
-  fieldLabel,
-  optionLabel,
-  quizGoals,
-} from '@/lib/lead'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
+import { type LeadFieldName, type LeadMeta, type LeadType, QUIZ_GOALS, fieldLabel, optionLabel as label } from '@/lib/lead'
+
+// The broker reads Russian: option names and field labels always come from the Russian dictionary,
+// whatever the language of the page. «Язык сайта» says in which language to answer.
+const ru = getDictionary('ru').forms
+const optionLabel = (field: LeadFieldName, id: string | undefined, type?: LeadType) => label(field, id, ru, 'ru', type)
+
+/** «Язык сайта: English» line of the note: the broker answers in the visitor's language. */
+const LANGUAGE: Record<Locale, string> = { ru: 'Русский', en: 'English', es: 'Español' }
 
 export type NormalizedLead = {
   id: string
   type: LeadType
   page: string
+  /** Language of the page the lead came from. */
+  locale: Locale
   fields: Partial<Record<LeadFieldName, string>>
   meta: LeadMeta
   score: number
@@ -95,8 +100,8 @@ export function describeLead(lead: NormalizedLead): string[] {
   add('Куда ответить', [optionLabel('channel', f.channel), f.contact].filter(Boolean).join(', '))
   if (lead.type === 'quiz') {
     add('Направление', [optionLabel('direction', f.direction, 'quiz'), optionLabel('district', f.district)].filter(Boolean).join(', '))
-    const goal = quizGoals.find((g) => g.id === f.goal)
-    add('Цель', goal ? `${goal.label} (сегмент ${goal.segment})` : f.goal)
+    const goal = QUIZ_GOALS.find((g) => g.id === f.goal)
+    add('Цель', goal ? `${optionLabel('goal', goal.id)} (сегмент ${goal.segment})` : f.goal)
     add('Бюджет', optionLabel('budget', f.budget))
     add('Срок', optionLabel('timeline', f.timeline))
   }
@@ -104,9 +109,10 @@ export function describeLead(lead: NormalizedLead): string[] {
     add('Формат', optionLabel('format', f.format, lead.type))
     if (lead.type === 'viewing') add('Направление', optionLabel('direction', f.format === 'viewing' ? 'phuket' : f.direction, 'viewing'))
     add('Дата и время', f.date && f.time ? `${f.date}, ${f.time} по Пхукету` : undefined)
-    add(fieldLabel('comment'), f.comment)
+    add(fieldLabel('comment', ru), f.comment)
   }
   add('Скоринг', lead.type === 'guide' ? undefined : `${lead.score} (${TEMPERATURE[lead.temperature]})`)
+  add('Язык сайта', LANGUAGE[lead.locale])
   add('Страница', lead.page)
   const m = lead.meta
   add('Вход', [m.landing, m.referrer].filter(Boolean).join(', '))

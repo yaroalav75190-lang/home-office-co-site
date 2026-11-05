@@ -15,6 +15,9 @@ import {
   useId,
   useState,
 } from 'react'
+import { useLocale } from '@/i18n/client'
+import { defaultPhoneCountry, localizePath } from '@/i18n/config'
+import type { FormsDict } from '@/i18n/ru/forms'
 import { AlertIcon, CheckIcon, ChevronIcon } from './icons'
 
 /* ───────────────────────── Field shell ───────────────────────── */
@@ -47,6 +50,7 @@ export function Field({
   className,
   children,
 }: FieldShellProps) {
+  const { t } = useLocale()
   return (
     <div className={className}>
       <label
@@ -54,7 +58,7 @@ export function Field({
         className={clsx('type-small mb-1 block text-ink-muted on-ink:text-on-ink-muted', hideLabel && 'sr-only')}
       >
         {label}
-        {optional ? ', необязательно' : null}
+        {optional ? t.forms.optional : null}
       </label>
       {children}
       {hint ? (
@@ -199,37 +203,49 @@ export function TextField(props: TextFieldProps) {
 
 /* ───────────────────────── PhoneField ───────────────────────── */
 
-export type PhoneCountry = { id: string; name: string; code: string; min: number; max: number }
+export type PhoneCountryId = keyof FormsDict['phone']['countries']
+export type PhoneCountry = { id: PhoneCountryId; code: string; min: number; max: number }
 
-/** Country codes for the selector; Russia first (copy-global §8.2: default «Россия +7»). */
+/**
+ * Country codes for the selector; Russia first (copy-global §8.2: default «Россия +7»). Names are
+ * `forms.phone.countries` in the dictionary; the preselected country is `defaultPhoneCountry`.
+ */
 export const phoneCountries: PhoneCountry[] = [
-  { id: 'ru', name: 'Россия', code: '+7', min: 10, max: 10 },
-  { id: 'kz', name: 'Казахстан', code: '+7', min: 10, max: 10 },
-  { id: 'by', name: 'Беларусь', code: '+375', min: 9, max: 9 },
-  { id: 'uz', name: 'Узбекистан', code: '+998', min: 9, max: 9 },
-  { id: 'kg', name: 'Кыргызстан', code: '+996', min: 9, max: 9 },
-  { id: 'am', name: 'Армения', code: '+374', min: 8, max: 8 },
-  { id: 'ge', name: 'Грузия', code: '+995', min: 9, max: 9 },
-  { id: 'az', name: 'Азербайджан', code: '+994', min: 9, max: 9 },
-  { id: 'th', name: 'Таиланд', code: '+66', min: 8, max: 9 },
-  { id: 'id', name: 'Индонезия', code: '+62', min: 9, max: 12 },
-  { id: 'ae', name: 'ОАЭ', code: '+971', min: 8, max: 9 },
-  { id: 'kh', name: 'Камбоджа', code: '+855', min: 8, max: 9 },
-  { id: 'tr', name: 'Турция', code: '+90', min: 10, max: 10 },
-  { id: 'il', name: 'Израиль', code: '+972', min: 8, max: 9 },
-  { id: 'de', name: 'Германия', code: '+49', min: 7, max: 12 },
-  { id: 'other', name: 'Другая страна', code: '+', min: 7, max: 15 },
+  { id: 'ru', code: '+7', min: 10, max: 10 },
+  { id: 'kz', code: '+7', min: 10, max: 10 },
+  { id: 'by', code: '+375', min: 9, max: 9 },
+  { id: 'uz', code: '+998', min: 9, max: 9 },
+  { id: 'kg', code: '+996', min: 9, max: 9 },
+  { id: 'am', code: '+374', min: 8, max: 8 },
+  { id: 'ge', code: '+995', min: 9, max: 9 },
+  { id: 'az', code: '+994', min: 9, max: 9 },
+  { id: 'th', code: '+66', min: 8, max: 9 },
+  { id: 'id', code: '+62', min: 9, max: 12 },
+  { id: 'ae', code: '+971', min: 8, max: 9 },
+  { id: 'kh', code: '+855', min: 8, max: 9 },
+  { id: 'tr', code: '+90', min: 10, max: 10 },
+  { id: 'il', code: '+972', min: 8, max: 9 },
+  { id: 'de', code: '+49', min: 7, max: 12 },
+  { id: 'other', code: '+', min: 7, max: 15 },
 ]
 
-/** Phone check with copy-global §8.3 wording. `digits` is the national number without the code. */
-export function validatePhone(countryId: string, digits: string, required = true): string | undefined {
+/**
+ * Phone check with copy-global §8.3 wording (`forms.messages` of the page's locale). `digits` is
+ * the national number without the code.
+ */
+export function validatePhone(
+  countryId: string,
+  digits: string,
+  m: FormsDict['messages'],
+  required = true,
+): string | undefined {
   const country = phoneCountries.find((c) => c.id === countryId) ?? phoneCountries[0]
   const n = digits.replace(/\D/g, '').length
-  if (n === 0) return required ? 'Укажите номер телефона' : undefined
+  if (n === 0) return required ? m.phoneEmpty : undefined
   if (n < country.min) {
-    return country.code === '+7' ? 'Проверьте номер: после +7 нужно 10 цифр' : 'Проверьте номер: после кода страны не хватает цифр'
+    return country.code === '+7' ? m.phoneShortRu : m.phoneShortOther
   }
-  if (n > country.max) return 'В номере лишние цифры. Проверьте, не повторился ли код страны'
+  if (n > country.max) return m.phoneLong
   return undefined
 }
 
@@ -268,11 +284,13 @@ function normalizeDigits(code: string, raw: string) {
 export type PhoneFieldProps = {
   /** Name of the hidden input with the full number, e.g. «+7 9001234567». */
   name: string
+  /** Default: `forms.contactLabels.phone` («Телефон»). */
   label?: ReactNode
   hint?: ReactNode
   optional?: boolean
   /** Error from the form (on submit). */
   error?: ReactNode
+  /** Default: `defaultPhoneCountry` of the page's locale. */
   defaultCountry?: string
   defaultValue?: string
   /** Full number on every change: `{ country, code, digits, value }`. */
@@ -285,11 +303,11 @@ export type PhoneFieldProps = {
 /** Phone with a country-code selector (copy-global §8.2: hidden label «Код страны»). */
 export function PhoneField({
   name,
-  label = 'Телефон',
+  label,
   hint,
   optional = false,
   error,
-  defaultCountry = 'ru',
+  defaultCountry,
   defaultValue = '',
   onValueChange,
   className,
@@ -301,7 +319,9 @@ export function PhoneField({
   const codeId = `${id}-code`
   const hintId = `${id}-hint`
   const errorId = `${id}-error`
-  const [country, setCountry] = useState(defaultCountry)
+  const { locale, t } = useLocale()
+  const m = t.forms.messages
+  const [country, setCountry] = useState(defaultCountry ?? defaultPhoneCountry[locale])
   const [digits, setDigits] = useState(() => defaultValue.replace(/\D/g, ''))
   const [blurError, setBlurError] = useState<string | undefined>()
   const current = phoneCountries.find((c) => c.id === country) ?? phoneCountries[0]
@@ -316,7 +336,7 @@ export function PhoneField({
   return (
     <Field
       id={id}
-      label={label}
+      label={label ?? t.forms.contactLabels.phone}
       optional={optional}
       hint={hint}
       hintId={hintId}
@@ -326,7 +346,7 @@ export function PhoneField({
     >
       <div className="flex items-stretch gap-3">
         <label htmlFor={codeId} className="sr-only">
-          Код страны
+          {t.forms.phone.countryCodeLabel}
         </label>
         {/* The select is as wide as its longest option; capped so the number keeps ~150 px at 390. */}
         <div className="relative max-w-[12rem] shrink-0">
@@ -336,14 +356,14 @@ export function PhoneField({
             onChange={(e) => {
               setCountry(e.target.value)
               update(e.target.value, digits)
-              if (blurError) setBlurError(validatePhone(e.target.value, digits, !optional))
+              if (blurError) setBlurError(validatePhone(e.target.value, digits, m, !optional))
             }}
             className={clsx('field-control nums w-full pr-7', controlExtras)}
             aria-invalid={shownError ? true : undefined}
           >
             {phoneCountries.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.id === 'other' ? c.name : `${c.name} ${c.code}`}
+                {c.id === 'other' ? t.forms.phone.countries[c.id] : `${t.forms.phone.countries[c.id]} ${c.code}`}
               </option>
             ))}
           </select>
@@ -361,9 +381,9 @@ export function PhoneField({
             const next = normalizeDigits(current.code, e.target.value).slice(0, current.max + 3)
             setDigits(next)
             update(country, next)
-            if (blurError) setBlurError(validatePhone(country, next, !optional))
+            if (blurError) setBlurError(validatePhone(country, next, m, !optional))
           }}
-          onBlur={() => setBlurError(validatePhone(country, digits, !optional))}
+          onBlur={() => setBlurError(validatePhone(country, digits, m, !optional))}
           aria-required={optional ? undefined : true}
           aria-invalid={shownError ? true : undefined}
           aria-describedby={describedBy(hint ? hintId : undefined, shownError ? errorId : undefined)}
@@ -429,24 +449,28 @@ export function Checkbox({ label, description, error, className, id: idProp, ...
 
 /** Consent checkbox with the copy-global §9 wording and links to /consent and /privacy. */
 export function ConsentCheckbox(props: Omit<CheckboxProps, 'label' | 'description'>) {
+  const { locale, t } = useLocale()
+  const { label, description } = t.forms.consent
   return (
     <Checkbox
       aria-required
       {...props}
       label={
         <>
-          Даю{' '}
-          <Link href="/consent" className="link-underline">
-            согласие на обработку персональных данных
+          {label.before}
+          <Link href={localizePath(locale, '/consent')} className="link-underline">
+            {label.link}
           </Link>
+          {label.after}
         </>
       }
       description={
         <>
-          Как храним и используем данные, написано в{' '}
-          <Link href="/privacy" className="link-underline">
-            политике конфиденциальности
+          {description.before}
+          <Link href={localizePath(locale, '/privacy')} className="link-underline">
+            {description.link}
           </Link>
+          {description.after}
         </>
       }
     />

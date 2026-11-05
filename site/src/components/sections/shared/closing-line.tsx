@@ -3,11 +3,14 @@ import type { ReactNode } from 'react'
 import { useId } from 'react'
 import { Button } from '@/components/ui/button'
 import { MessengerLink } from '@/components/ui/messenger-link'
-import { contacts, founder } from '@/lib/site'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
+import { contacts } from '@/lib/site'
 import { ClosingSentence } from './closing-sentence'
 import { withStubs } from './stub'
 
 type ClosingLineProps = {
+  locale: Locale
   /**
    * Start of the closing sentence, without the reply part: «Расскажите, что ищете»,
    * «Расскажите, что ищете на Пхукете». The component appends «, и брокер ответит до 16:55»
@@ -32,8 +35,9 @@ type ClosingLineProps = {
  * Spacing: `py-section` — it is the last salt section before the ink footer.
  * Mobile: sentence, then a 96 px portrait with its caption, then the tiles.
  */
-export function ClosingLine({ title, cta, note, className }: ClosingLineProps) {
+export function ClosingLine({ locale, title, cta, note, className }: ClosingLineProps) {
   const headingId = useId()
+  const { founder, closingLine } = getDictionary(locale).common
   return (
     <section aria-labelledby={headingId} className={clsx('grid-site py-section', className)}>
       <div className="col-span-full md:col-span-6 lg:col-span-5">
@@ -71,7 +75,7 @@ export function ClosingLine({ title, cta, note, className }: ClosingLineProps) {
           <MessengerLink channel="whatsapp" className="w-full" />
         </div>
         <p className="type-small mt-4 text-ink-muted">
-          Или позвоните:{' '}
+          {closingLine.call}{' '}
           <a href={contacts.phone.href} className="link-underline nums text-ink">
             {withStubs(contacts.phone.display)}
           </a>

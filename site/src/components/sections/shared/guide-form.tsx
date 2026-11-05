@@ -20,12 +20,12 @@ import {
 } from '@/components/sections/forms/form-kit'
 import { replyWhen, useReplyState } from '@/components/sections/forms/use-clock'
 import { ConsentCheckbox, PhoneField, TextField, validatePhone } from '@/components/ui/field'
+import { useLocale } from '@/i18n/client'
+import { fmt } from '@/i18n/format'
 import {
   type LeadFieldName,
   type Option,
-  contactLabels,
   fieldLabel,
-  leadMessages,
   validateEmail,
   validateName,
   validateTelegram,
@@ -33,19 +33,8 @@ import {
 
 type GuideChannel = 'telegram' | 'whatsapp' | 'email'
 
-/** «Куда прислать гид» (copy-home §9): no «Звонок» for a PDF. */
-const guideChannels: Option<GuideChannel>[] = [
-  { id: 'telegram', label: 'Telegram' },
-  { id: 'whatsapp', label: 'WhatsApp' },
-  { id: 'email', label: 'Почта' },
-]
-
-/** «в Telegram» · «в WhatsApp» · «на почту» (copy-global §10.4). */
-const toChannel: Record<GuideChannel, string> = {
-  telegram: 'в Telegram',
-  whatsapp: 'в WhatsApp',
-  email: 'на почту',
-}
+/** «Куда прислать гид» (copy-home §9): no «Звонок» for a PDF. Labels: `forms.guide.channels`. */
+const GUIDE_CHANNELS: readonly GuideChannel[] = ['telegram', 'whatsapp', 'email']
 
 type Phone = { country: string; digits: string; value: string }
 
@@ -61,7 +50,8 @@ export function GuideForm({ className }: { className?: string }) {
   const [channel, setChannel] = useState<GuideChannel | ''>('')
   const [telegram, setTelegram] = useState('')
   const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState<Phone>({ country: 'ru', digits: '', value: '' })
+  // '' = the locale's default code until the visitor types (see emptyChannelContact in form-kit).
+  const [phone, setPhone] = useState<Phone>({ country: '', digits: '', value: '' })
   const [consent, setConsent] = useState(false)
   const [errors, setErrors] = useState<FieldErrors>({})
   const [summary, setSummary] = useState<{ label: string; targetId: string }[]>([])
@@ -71,6 +61,11 @@ export function GuideForm({ className }: { className?: string }) {
 
   const { status, failure, send } = useLeadSubmit()
   const reply = useReplyState()
+  const { t } = useLocale()
+  const f = t.forms
+  const g = f.guide
+  const m = f.messages
+  const guideChannels: Option<GuideChannel>[] = GUIDE_CHANNELS.map((c) => ({ id: c, label: g.channels[c] }))
 
   useEffect(() => {
     if (focusTarget === 'summary') summaryRef.current?.focus()
@@ -105,19 +100,19 @@ export function GuideForm({ className }: { className?: string }) {
 
   const validate = (): FieldErrors => {
     const next: FieldErrors = {}
-    const nameError = validateName(name)
+    const nameError = validateName(name, m)
     if (nameError) next.name = nameError
-    if (!channel) next.channel = leadMessages.channel
+    if (!channel) next.channel = m.channel
     else {
       const message =
         channel === 'telegram'
-          ? validateTelegram(telegram)
+          ? validateTelegram(telegram, m)
           : channel === 'email'
-            ? validateEmail(email)
-            : validatePhone(phone.country, phone.digits)
+            ? validateEmail(email, m)
+            : validatePhone(phone.country, phone.digits, m)
       if (message) next.contact = message
     }
-    if (!consent) next.consent = leadMessages.consent
+    if (!consent) next.consent = m.consent
     return next
   }
 
@@ -126,10 +121,10 @@ export function GuideForm({ className }: { className?: string }) {
     (Object.keys(found) as LeadFieldName[]).map((key) => ({
       label:
         key === 'channel'
-          ? 'Куда прислать гид'
+          ? g.channelLegend
           : key === 'contact' && channel
-            ? contactLabels[channel]
-            : fieldLabel(key, channel || undefined),
+            ? f.contactLabels[channel]
+            : fieldLabel(key, f, channel || undefined),
       targetId: ids[key as keyof typeof ids] ?? ids.name,
     }))
 
@@ -173,16 +168,14 @@ export function GuideForm({ className }: { className?: string }) {
   if (status === 'done' && sentChannel) {
     // copy-global §10.4, promo version (DEMO_DECISIONS «Формы»): the guide goes to the chosen
     // channel, so there is no «Гид открылся в новой вкладке» and no «Скачать PDF».
-    const when = reply ? replyWhen(reply) : 'в течение 15 минут'
+    const when = reply ? replyWhen(reply, t.common.reply) : t.common.reply.when.fallback
     return (
       <div className={className} role="status">
         <h3 ref={doneRef} tabIndex={-1} className="type-d3 max-w-[24ch] focus:outline-none">
-          Пришлём гид {toChannel[sentChannel]}
+          {fmt(g.doneTitle, { channel: g.to[sentChannel] })}
         </h3>
         <p className="type-small nums mt-4 max-w-[44ch]">
-          {sentChannel === 'email'
-            ? `Вопросы по гиду задайте в ответном письме, брокер ответит ${when}`
-            : `Вопросы по гиду задайте в том же чате, брокер ответит ${when}`}
+          {fmt(sentChannel === 'email' ? g.doneEmail : g.doneChat, { when })}
         </p>
       </div>
     )
@@ -191,7 +184,7 @@ export function GuideForm({ className }: { className?: string }) {
   const busy = status === 'busy'
 
   return (
-    <form ref={formRef} method="post" noValidate onSubmit={onSubmit} className={className} aria-label="Получить гид">
+    <form ref={formRef} method="post" noValidate onSubmit={onSubmit} className={className} aria-label={g.formLabel}>
       <Honeypot />
       <div className="flex flex-col gap-8">
         <ErrorSummary items={summary} summaryRef={summaryRef} />
@@ -199,11 +192,11 @@ export function GuideForm({ className }: { className?: string }) {
         <TextField
           id={ids.name}
           name="name"
-          label="Имя"
+          label={f.fields.name}
           autoComplete="given-name"
           value={name}
           error={errors.name}
-          validate={validateName}
+          validate={(v) => validateName(v, m)}
           onChange={(e) => {
             dropError('name')
             setName(e.currentTarget.value)
@@ -214,7 +207,7 @@ export function GuideForm({ className }: { className?: string }) {
           <OptionTiles
             id={ids.channel}
             name={`${id}-channel-choice`}
-            legend="Куда прислать гид"
+            legend={g.channelLegend}
             options={guideChannels}
             value={channel}
             columns="grid-cols-3"
@@ -229,14 +222,14 @@ export function GuideForm({ className }: { className?: string }) {
             <TextField
               key="telegram"
               id={ids.contact}
-              label={contactLabels.telegram}
-              placeholder="@username или +7 900 000-00-00"
+              label={f.contactLabels.telegram}
+              placeholder={f.placeholders.telegram}
               autoComplete="off"
               autoCapitalize="none"
               spellCheck={false}
               value={telegram}
               error={errors.contact}
-              validate={validateTelegram}
+              validate={(v) => validateTelegram(v, m)}
               onChange={(e) => {
                 dropError('contact')
                 setTelegram(e.currentTarget.value)
@@ -249,14 +242,14 @@ export function GuideForm({ className }: { className?: string }) {
               id={ids.contact}
               type="email"
               inputMode="email"
-              label={contactLabels.email}
-              placeholder="name@mail.ru"
+              label={f.contactLabels.email}
+              placeholder={f.placeholders.email}
               autoComplete="email"
               autoCapitalize="none"
               spellCheck={false}
               value={email}
               error={errors.contact}
-              validate={validateEmail}
+              validate={(v) => validateEmail(v, m)}
               onChange={(e) => {
                 dropError('contact')
                 setEmail(e.currentTarget.value)
@@ -268,8 +261,8 @@ export function GuideForm({ className }: { className?: string }) {
               key="whatsapp"
               id={ids.contact}
               name={`${id}-phone`}
-              label={contactLabels.whatsapp}
-              defaultCountry={phone.country}
+              label={f.contactLabels.whatsapp}
+              defaultCountry={phone.country || undefined}
               defaultValue={phone.digits}
               error={errors.contact}
               onValueChange={(v) => {
@@ -299,10 +292,8 @@ export function GuideForm({ className }: { className?: string }) {
         ) : null}
 
         <div>
-          <SubmitButton label="Получить гид" busy={busy} variant="inverse" />
-          <p className="type-small mt-4 text-on-ink-muted">
-            Пришлём гид в выбранный канал
-          </p>
+          <SubmitButton label={g.submit} busy={busy} variant="inverse" />
+          <p className="type-small mt-4 text-on-ink-muted">{g.note}</p>
           <ChannelNote className="mt-2" />
         </div>
       </div>

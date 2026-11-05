@@ -7,8 +7,6 @@ export {
   coasts,
   phuketDistricts,
   places,
-  districtName,
-  OSM_ATTRIBUTION,
   OSM_LICENSE_URL,
   OSM_DATA_DATE,
 } from "./meta";
