@@ -2,9 +2,11 @@ import type { ReactNode } from 'react'
 import { Breadcrumbs, type BreadcrumbItem } from '@/components/sections/shared/breadcrumbs'
 import { Button } from '@/components/ui/button'
 import { ReplyTime } from '@/components/ui/reply-time'
+import type { Locale } from '@/i18n/config'
 import { typo } from './text'
 
 type GeoHeroProps = {
+  locale: Locale
   crumbs: BreadcrumbItem[]
   /** h1 D1 in two lines (copy: «Недвижимость» / «на Пхукете»). */
   titleLines: readonly [string, string]
@@ -28,26 +30,26 @@ type GeoHeroProps = {
  * Motion: `data-hero` on the section, `data-hero-title` on the h1. Nothing here carries
  * `data-reveal`: the h1, Lead, button and reply line are visible on first paint (LCP, §5).
  */
-export function GeoHero({ crumbs, titleLines, lead, cta, art, panorama }: GeoHeroProps) {
+export function GeoHero({ locale, crumbs, titleLines, lead, cta, art, panorama }: GeoHeroProps) {
   return (
     <section
       data-hero=""
       aria-labelledby="hero-title"
       className="grid-site pt-[calc(var(--header-h)+1.5rem)] lg:pt-[calc(var(--header-h)+2.5rem)]"
     >
-      <Breadcrumbs items={crumbs} className="mb-12" />
+      <Breadcrumbs locale={locale} items={crumbs} className="mb-12" />
 
       {/* From 1024 px the grid, not the drawing's cell, is the containing block of the drawing (see
           the cell below): Chrome collapses a row-spanning cell whose only child is absolute to 0 px
           for the length of the panorama's clip reveal, which made the island vanish (CLS 0.024). */}
       <div className="col-span-full grid grid-cols-subgrid lg:relative">
         <h1 id="hero-title" data-hero-title="" className="type-d1 col-span-full lg:row-start-1">
-          <span className="block">{typo(titleLines[0])}</span>{' '}
-          <span className="block">{typo(titleLines[1])}</span>
+          <span className="block">{typo(titleLines[0], locale)}</span>{' '}
+          <span className="block">{typo(titleLines[1], locale)}</span>
         </h1>
 
         <div className="col-span-full mt-10 md:col-span-5 lg:row-start-2 lg:mt-14">
-          <p className="type-lead max-w-[40ch]">{typo(lead)}</p>
+          <p className="type-lead max-w-[40ch]">{typo(lead, locale)}</p>
           <div className="mt-8">
             <Button href={cta.href}>{cta.label}</Button>
           </div>

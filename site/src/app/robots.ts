@@ -4,7 +4,7 @@ import type { MetadataRoute } from 'next'
 // stay open so robots can render the page. /s/{token} is deliberately not listed: it is closed with
 // noindex headers, a robots.txt block would hide those from the crawler (§6.4, §6.5).
 //
-// TODO(launch): keep equal to `metadataBase` in app/layout.tsx (see the note in app/sitemap.ts).
+// TODO(launch): keep equal to `metadataBase` in src/components/layout/site-shell.tsx (see the note in app/sitemap.ts).
 const ORIGIN = 'https://homeofficeco.com'
 
 export default function robots(): MetadataRoute.Robots {
@@ -26,6 +26,8 @@ export default function robots(): MetadataRoute.Robots {
             // The quiz links prefill the form (/podbor?country=bali, ?country=phuket&district=bang-tao);
             // the canonical is /podbor without parameters (§6.1).
             'country&district /podbor',
+            'country&district /en/podbor',
+            'country&district /es/podbor',
           ],
         },
       },

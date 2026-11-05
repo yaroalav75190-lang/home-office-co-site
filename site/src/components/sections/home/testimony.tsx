@@ -1,6 +1,15 @@
 import { clsx } from 'clsx'
 import { Coast } from '@/components/coast'
-import { investSection, reviewSection, reviewSamples, type ReviewSample } from './content'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
+import { capitalize, fmt } from '@/i18n/format'
+import type { HomeDict } from '@/i18n/ru/home'
+import { type ReviewSampleDistrict, reviewSampleDistricts } from './content'
+
+type ReviewSample = HomeDict['review']['samples'][ReviewSampleDistrict] & {
+  /** District drawn on the island next to the first review. */
+  district: ReviewSampleDistrict
+}
 
 /**
  * Typographic portrait card (DEMO_DECISIONS «Люди и отзывы»): a sand field with the person's
@@ -25,7 +34,10 @@ function InitialCard({ initial, label, className }: { initial: string; label: st
  * основатель…» UI and a paragraph. No stars, no decorative quotation marks. What the team bought
  * and where is not shown until the client names it.
  */
-export function HomeInvest() {
+export function HomeInvest({ locale }: { locale: Locale }) {
+  const { home, common } = getDictionary(locale)
+  const investSection = home.invest
+  const { founder } = common
   return (
     <section aria-labelledby="home-invest" className="grid-site pt-section">
       <h2 id="home-invest" className="sr-only">
@@ -33,7 +45,7 @@ export function HomeInvest() {
       </h2>
 
       <div data-reveal="clip" className="col-span-3 md:col-span-4 lg:col-span-4">
-        <InitialCard initial={investSection.name.charAt(0)} label={investSection.role} />
+        <InitialCard initial={founder.name.charAt(0)} label={capitalize(founder.role)} />
       </div>
 
       <figure className="col-span-full mt-12 grid grid-cols-subgrid md:mt-16 lg:col-span-7 lg:col-start-6 lg:mt-[120px] lg:content-start">
@@ -44,7 +56,7 @@ export function HomeInvest() {
         </blockquote>
         {/* The paragraph lives in the caption: <figcaption> must be the figure's first or last child (W3C). */}
         <figcaption data-reveal="fade" className="col-span-full mt-8 lg:col-span-4">
-          <p className="type-ui">{investSection.author}</p>
+          <p className="type-ui">{fmt(investSection.author, { name: founder.name })}</p>
           <p className="type-body mt-8 max-w-[52ch]">{investSection.text}</p>
         </figcaption>
       </figure>
@@ -53,12 +65,20 @@ export function HomeInvest() {
 }
 
 /** City (UI), what was bought and the «Пример отзыва» label (Small): the same caption for every review. */
-function ReviewCaption({ review, className }: { review: ReviewSample; className?: string }) {
+function ReviewCaption({
+  review,
+  labels,
+  className,
+}: {
+  review: ReviewSample
+  labels: Pick<HomeDict['review'], 'purchase' | 'sampleLabel'>
+  className?: string
+}) {
   return (
     <figcaption className={className}>
       <p className="type-ui">{review.city}</p>
-      <p className="type-small mt-1 text-ink-muted">Покупка: {review.purchase}</p>
-      <p className="type-small mt-1 text-ink-muted">{reviewSection.sampleLabel}</p>
+      <p className="type-small mt-1 text-ink-muted">{fmt(labels.purchase, { purchase: review.purchase })}</p>
+      <p className="type-small mt-1 text-ink-muted">{labels.sampleLabel}</p>
     </figcaption>
   )
 }
@@ -75,7 +95,12 @@ function ReviewCaption({ review, className }: { review: ReviewSample; className?
  */
 export const SHOW_REVIEW_SAMPLES = true
 
-export function HomeReview() {
+export function HomeReview({ locale }: { locale: Locale }) {
+  const reviewSection = getDictionary(locale).home.review
+  const reviewSamples: ReviewSample[] = reviewSampleDistricts.map((district) => ({
+    ...reviewSection.samples[district],
+    district,
+  }))
   if (!SHOW_REVIEW_SAMPLES || reviewSamples.length === 0) return null
   const [featured, ...rest] = reviewSamples
 
@@ -91,7 +116,7 @@ export function HomeReview() {
             {featured.quote}
           </p>
         </blockquote>
-        <ReviewCaption review={featured} className="mt-8" />
+        <ReviewCaption review={featured} labels={reviewSection} className="mt-8" />
       </figure>
 
       {/* The island with the district of the purchase, named in the caption (decorative SVG). */}
@@ -109,7 +134,7 @@ export function HomeReview() {
         <ul role="list" data-reveal="items" className="col-span-full mt-16 grid grid-cols-subgrid gap-y-12 lg:mt-24">
           {rest.map((review, i) => (
             <li
-              key={review.city}
+              key={review.district}
               className={clsx(
                 'col-span-full md:col-span-4 lg:col-span-5',
                 i % 2 === 1 && 'md:col-start-5 lg:col-start-7 lg:mt-24',
@@ -119,7 +144,7 @@ export function HomeReview() {
                 <blockquote>
                   <p className="type-lead max-w-[36ch]">{review.quote}</p>
                 </blockquote>
-                <ReviewCaption review={review} className="mt-6" />
+                <ReviewCaption review={review} labels={reviewSection} className="mt-6" />
               </figure>
             </li>
           ))}

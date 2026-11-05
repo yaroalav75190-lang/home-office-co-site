@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/button'
 import { Figure } from '@/components/ui/figure'
 import { ReplyTime } from '@/components/ui/reply-time'
-import { hero } from './content'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
+import { links } from './content'
 
 /**
  * Home hero (art-direction §6 «Главная» 1).
@@ -18,7 +20,8 @@ import { hero } from './content'
  * Motion hooks: `data-hero` (section), `data-hero-title` (h1), `data-hero-print`,
  * `data-hero-panorama`. Nothing here carries `data-reveal`: h1 and panorama are visible without JS.
  */
-export function HomeHero() {
+export function HomeHero({ locale }: { locale: Locale }) {
+  const hero = getDictionary(locale).home.hero
   const [line1, line2] = hero.titleLines
   return (
     <section data-hero="" aria-labelledby="home-title" className="grid-site pt-header">
@@ -36,7 +39,7 @@ export function HomeHero() {
       <div className="col-span-full mt-8 md:col-span-5 lg:col-span-4 lg:row-start-2 lg:mt-[calc(3rem_-_0.92*var(--text-d1))]">
         <p className="type-lead max-w-[36ch]">{hero.lead}</p>
         <div className="mt-6 md:mt-8">
-          <Button href={hero.cta.href}>{hero.cta.label}</Button>
+          <Button href={links.podbor}>{hero.cta}</Button>
         </div>
         <ReplyTime className="mt-3 max-w-[40ch] md:mt-4" />
       </div>
@@ -46,6 +49,7 @@ export function HomeHero() {
         className="col-span-2 col-start-3 -order-1 mt-4 md:col-span-3 md:col-start-6 md:mt-8 lg:order-none lg:col-span-3 lg:col-start-10 lg:row-span-2 lg:row-start-2 lg:mt-12 lg:self-start"
       >
         <Figure
+          locale={locale}
           photo="villa"
           ratio="4x5"
           preload
@@ -56,6 +60,7 @@ export function HomeHero() {
 
       <div data-hero-panorama="" className="col-span-full mt-12 md:mt-16 lg:col-span-8 lg:row-start-3 lg:mt-16">
         <Figure
+          locale={locale}
           photo="hero"
           ratio="21x9"
           mobileRatio="4x5"

@@ -1,4 +1,7 @@
+'use client'
+
 import { clsx } from 'clsx'
+import { useLocale } from '@/i18n/client'
 import { contacts, type ContactChannel } from '@/lib/site'
 import { MailIcon, PhoneIcon, TelegramIcon, WhatsAppIcon } from './icons'
 
@@ -22,6 +25,7 @@ type MessengerLinkProps = {
  */
 export function MessengerLink({ channel, label, className }: MessengerLinkProps) {
   const c = contacts[channel]
+  const { t } = useLocale()
   const Icon = icons[channel]
   const external = c.href.startsWith('http')
   return (
@@ -36,7 +40,7 @@ export function MessengerLink({ channel, label, className }: MessengerLinkProps)
     >
       <Icon size={22} className="shrink-0" />
       <span className="bg-[linear-gradient(currentColor,currentColor)] bg-[length:0_1px] bg-[position:100%_100%] bg-no-repeat pb-0.5 transition-[background-size] duration-320 ease-in-out group-hover:bg-[length:100%_1px] group-hover:bg-[position:0_100%]">
-        {label ?? c.action}
+        {label ?? t.common.channels[channel].action}
       </span>
     </a>
   )

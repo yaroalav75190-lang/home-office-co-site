@@ -1,7 +1,9 @@
 import { TransitionLink as Link } from '@/components/motion/transition-link'
-import { Locator } from '@/components/coast'
+import { type DistrictId, Locator } from '@/components/coast'
 import { TextLink } from '@/components/ui/text-link'
-import { type DistrictPage, districtById, districtHref } from './districts'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
+import { type DistrictPage, type DistrictPageCopy, districtById, districtHref } from './districts'
 import { Rich, typo } from './text'
 
 /**
@@ -11,19 +13,34 @@ import { Rich, typo } from './text'
  * links to it; until then one «Все районы Пхукета» link closes the block (copy-bang-tao §6), so
  * the page does not repeat the same link twice.
  */
-export function DistrictNeighbours({ neighbours }: { neighbours: DistrictPage['neighbours'] }) {
-  const rows = neighbours.items.map((n) => ({ ...n, district: districtById(n.id) }))
+export function DistrictNeighbours({
+  locale,
+  neighbours,
+  copy,
+}: {
+  locale: Locale
+  /** Which neighbours, north first, and the fallback link (facts). */
+  neighbours: DistrictPage['neighbours']
+  copy: DistrictPageCopy['neighbours']
+}) {
+  const names = getDictionary(locale).districts.districts
+  // Words of each neighbour by district id; a neighbour without words in the dictionary is skipped.
+  const words: Partial<Record<DistrictId, { side: string; text: string }>> = copy.items
+  const rows = neighbours.ids.flatMap((id) => {
+    const w = words[id]
+    return w ? [{ id, ...w, district: districtById(id) }] : []
+  })
   const anyWithoutPage = rows.some((r) => !r.district?.page)
 
   return (
     <section aria-labelledby="neighbours-title" className="grid-site pt-section">
       <h2 id="neighbours-title" data-reveal="lines" className="type-d2 col-span-full lg:col-span-8">
-        {typo(neighbours.title)}
+        {typo(copy.title, locale)}
       </h2>
 
       <ul role="list" data-reveal="items" className="col-span-full mt-heading grid grid-cols-subgrid gap-y-14 lg:gap-y-16">
         {rows.map((row) => {
-          const name = typo(row.district?.name ?? row.id)
+          const name = typo(names[row.id].name, locale)
           const page = row.district?.page ? districtHref(row.district) : null
           return (
             <li key={row.id} className="col-span-full grid grid-cols-subgrid gap-y-4 md:items-end">
@@ -35,7 +52,7 @@ export function DistrictNeighbours({ neighbours }: { neighbours: DistrictPage['n
                 <Locator district={row.id} size={96} />
               </div>
               <p className="type-body col-span-full max-w-[44ch] md:col-span-4 md:col-start-1 md:row-start-2 lg:col-span-4 lg:col-start-5 lg:row-start-1">
-                <Rich text={row.text} />
+                <Rich text={row.text} locale={locale} />
               </p>
             </li>
           )
@@ -44,7 +61,7 @@ export function DistrictNeighbours({ neighbours }: { neighbours: DistrictPage['n
 
       {anyWithoutPage ? (
         <p className="type-ui col-span-full mt-14 lg:col-start-5">
-          <TextLink href={neighbours.fallback.href}>{neighbours.fallback.label}</TextLink>
+          <TextLink href={neighbours.fallback.href}>{copy.fallback}</TextLink>
         </p>
       ) : null}
     </section>

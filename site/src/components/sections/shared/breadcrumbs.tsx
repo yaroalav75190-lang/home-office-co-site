@@ -1,5 +1,7 @@
 import { clsx } from 'clsx'
 import { TransitionLink as Link } from '@/components/motion/transition-link'
+import { getDictionary } from '@/i18n'
+import { type Locale, localizePath } from '@/i18n/config'
 import { JsonLd } from '@/lib/seo/json-ld'
 import { absoluteUrl } from './site-url'
 
@@ -10,6 +12,8 @@ export type BreadcrumbItem = {
 }
 
 type BreadcrumbsProps = {
+  locale: Locale
+  /** Hrefs are Russian paths; links and JSON-LD localize them. */
   items: BreadcrumbItem[]
   /** Skip the BreadcrumbList JSON-LD (e.g. when a page emits its own). Default: emitted. */
   schema?: boolean
@@ -21,12 +25,12 @@ type BreadcrumbsProps = {
  * (seo-brief §6.6: Yandex requires JSON-LD for BreadcrumbList).
  *
  * Usage, inside a `grid-site` hero:
- *   <Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Пхукет' }]} className="mb-12" />
+ *   <Breadcrumbs locale={locale} items={[{ label: t.common.breadcrumbs.home, href: '/' }, { label: 'Пхукет' }]} className="mb-12" />
  *
  * The separator is a slash in ink-muted, hidden from screen readers; no arrows
  * or middle dots (§8.10). Spans all columns of its grid.
  */
-export function Breadcrumbs({ items, schema = true, className }: BreadcrumbsProps) {
+export function Breadcrumbs({ locale, items, schema = true, className }: BreadcrumbsProps) {
   if (items.length === 0) return null
 
   const jsonLd = {
@@ -37,12 +41,12 @@ export function Breadcrumbs({ items, schema = true, className }: BreadcrumbsProp
       position: index + 1,
       name: item.label,
       // Google and Yandex accept the last crumb without `item`.
-      ...(item.href ? { item: absoluteUrl(item.href) } : {}),
+      ...(item.href ? { item: absoluteUrl(localizePath(locale, item.href)) } : {}),
     })),
   }
 
   return (
-    <nav aria-label="Навигационная цепочка" className={clsx('col-span-full', className)}>
+    <nav aria-label={getDictionary(locale).common.breadcrumbs.label} className={clsx('col-span-full', className)}>
       <ol role="list" className="type-small flex flex-wrap items-baseline gap-y-1 text-ink-muted on-ink:text-on-ink-muted">
         {items.map((item, index) => {
           const last = index === items.length - 1

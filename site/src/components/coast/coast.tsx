@@ -1,6 +1,9 @@
 import type { SVGProps } from "react";
+import { getDictionary } from "@/i18n";
+import type { Locale } from "@/i18n/config";
+import { fmt } from "@/i18n/format";
 import { coastData } from "./data";
-import { coasts, districtName, phuketDistricts } from "./meta";
+import { phuketDistricts } from "./meta";
 import type { CoastData, CoastId, CoastLod, DistrictId } from "./types";
 
 export type CoastProps = Omit<SVGProps<SVGSVGElement>, "viewBox" | "children" | "ref" | "role"> & {
@@ -15,8 +18,10 @@ export type CoastProps = Omit<SVGProps<SVGSVGElement>, "viewBox" | "children" | 
   districts?: boolean;
   /** Level of detail. Default `full`; use `mid` below ~200 px. */
   lod?: CoastLod;
-  /** Russian accessible name; defaults to the coast title (+ district). */
+  /** Accessible name; defaults to the coast title (+ district) from the dictionary of `locale`. */
   title?: string;
+  /** Language of the default accessible name (only used without `title` and not `decorative`). */
+  locale?: Locale;
   /** Hide from assistive tech (when nearby text already names the place). */
   decorative?: boolean;
   /** Colour class of the base line when a district is shown. */
@@ -38,6 +43,7 @@ export function Coast({
   districts = false,
   lod = "full",
   title,
+  locale = "ru",
   decorative = false,
   className,
   baseClassName = "text-ink-muted",
@@ -46,11 +52,13 @@ export function Coast({
   ...rest
 }: CoastProps) {
   const data: CoastData = coastData[id];
-  const meta = coasts[id];
   const paths = data[lod];
   const segments = paths.districts;
   const withDistricts = Boolean(segments && (highlight || districts));
-  const label = title ?? (highlight ? `${meta.title}, район ${districtName(highlight)}` : meta.title);
+  const names = getDictionary(locale).places;
+  const label =
+    title ??
+    (highlight ? fmt(names.coastWithDistrict, { coast: names.coasts[id], district: names.districts[highlight] }) : names.coasts[id]);
 
   const shown = phuketDistricts.filter((d) => segments?.[d.id] && (districts || d.id === highlight));
 

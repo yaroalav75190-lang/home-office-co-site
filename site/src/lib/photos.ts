@@ -13,8 +13,10 @@
  *   photos.hero['21x9']        → { src, width, height }   (only the ratios that exist)
  *   photos[key][ratio]         → PhotoAsset | undefined for union-typed props
  *   getPhoto('hero', '21x9')   → PhotoAsset; a missing crop is a type error (PhotoRef / PhotoRatio)
- *   photoMeta.hero             → { alt, caption, place, credit, license, sourceUrl }
- *   credits                    → rows for /credits
+ *   photoMeta.hero             → { place, credit, license, sourceUrl }
+ *   credits                    → rows for /credits (facts; the words are in the dictionary)
+ *
+ * Alt texts and captions are words: `photos` in src/i18n/<locale>/photos.ts, by photo key.
  *
  * Captions go under the photo in «Место, побережье» form; text never sits on a photo. A caption
  * names a place only when the Unsplash location (or the author's description) confirms it;
@@ -54,10 +56,6 @@ export type PhotoAsset = { readonly src: string; readonly width: number; readonl
 export type PhotoPlace = 'kata-noi' | 'bang-tao' | 'kata' | 'nai-harn' | 'rawai' | 'kamala'
 
 export type PhotoMeta = {
-  /** Russian alt text: what is actually in the frame. */
-  readonly alt: string
-  /** Caption under the photo, «Место, побережье». */
-  readonly caption: string
   /** Locator dot for the caption: only for a confirmed Phuket place, otherwise null. */
   readonly place: PhotoPlace | null
   /** Author as it should be credited (Unsplash profile name). */
@@ -207,8 +205,6 @@ const LICENSE_URL: Record<string, string | null> = {
 export const photoMeta = {
   hero: {
     // Tags: phuket, thai beach; no location field. A west-coast beach (shallow water, casuarinas).
-    alt: 'Длинный пляж Пхукета с высоты: дуга белого песка между казуаринами и мелкой бирюзовой водой, лодки на якоре, песчаная коса вдали',
-    caption: 'Западное побережье Пхукета',
     place: null,
     credit: 'Antonio Araujo',
     license: UNSPLASH,
@@ -216,8 +212,6 @@ export const photoMeta = {
   },
   phuket: {
     // Location: Ya Nui, Rawai, Phuket. No locator: Ya Nui has no point of its own.
-    alt: 'Бухта Я Нуи со смотровой площадки: лесистый мыс, островок напротив, маленький пляж и яхта на якоре',
-    caption: 'Я Нуи, юго-западное побережье Пхукета',
     place: null,
     credit: 'Polina Kocheva',
     license: UNSPLASH,
@@ -225,8 +219,6 @@ export const photoMeta = {
   },
   bangtao: {
     // Wikimedia Commons, «Bang Tao Beach (53667853591).jpg».
-    alt: 'Пляж Банг Тао днём: шезлонги и зонты под пальмами, белый песок, лодки на воде, лесистый мыс на севере бухты',
-    caption: 'Банг Тао, западное побережье Пхукета',
     place: 'bang-tao',
     credit: 'Raita Futo',
     license: CC_BY_2,
@@ -234,8 +226,6 @@ export const photoMeta = {
   },
   sunset: {
     // Wikimedia Commons, «Sunset at Bang Tao beach - 01.jpg».
-    alt: 'Закат на пляже Банг Тао: камни на переднем плане, мокрый песок отражает небо, силуэт лесистого мыса',
-    caption: 'Закат на Банг Тао, западное побережье Пхукета',
     place: 'bang-tao',
     credit: 'Anton Zelenov',
     license: CC_BY_SA_4,
@@ -243,8 +233,6 @@ export const photoMeta = {
   },
   kata: {
     // Location: Kata Beach, Karon; the author describes the sunset and the boat.
-    alt: 'Пляж Ката на закате, снято с воды: лодка-лонгтейл, остров Ко Пу, солнце садится за мыс',
-    caption: 'Ката, западное побережье Пхукета',
     place: 'kata',
     credit: 'Andre Mouton',
     license: UNSPLASH,
@@ -253,8 +241,6 @@ export const photoMeta = {
   naiharn: {
     // Location: Rawai (the subdistrict of Nai Harn); the frame is Nai Harn bay: the lake behind
     // the beach and the yacht anchorage are unmistakable.
-    alt: 'Бухта Най Харн со склона холма: пляж и озеро за ним, яхты на рейде, остров у входа в бухту, сухой кустарник на переднем плане',
-    caption: 'Най Харн, юго-западное побережье Пхукета',
     place: 'nai-harn',
     credit: 'Max Bvp',
     license: UNSPLASH,
@@ -262,8 +248,6 @@ export const photoMeta = {
   },
   pattaya: {
     // Location: Pattaya Beach, Chon Buri.
-    alt: 'Паттайя с высоты: длинный пляж вдоль залива, высотки у набережной и город за ними',
-    caption: 'Паттайя, побережье Сиамского залива',
     place: null,
     credit: 'Ryutaro Uozumi',
     license: UNSPLASH,
@@ -271,8 +255,6 @@ export const photoMeta = {
   },
   bali: {
     // Location: Uluwatu, Pecatu, Badung; description «Uluwatu Temple View».
-    alt: 'Обрыв у храма Улувату на Бали: зелёные скалы, тропа по краю, внизу прибой и камень в пене',
-    caption: 'Улувату, полуостров Букит, Бали',
     place: null,
     credit: 'Alexandra Smielova',
     license: UNSPLASH,
@@ -280,8 +262,6 @@ export const photoMeta = {
   },
   villa: {
     // Location: Koh Samui, not Phuket. A format example, not a client property.
-    alt: 'Панорамный бассейн виллы на склоне: кромка воды сливается с морем, острова на горизонте, белый павильон слева',
-    caption: 'Пример формата: вилла с бассейном',
     place: null,
     credit: 'big.tiny.belly',
     license: UNSPLASH,
@@ -289,8 +269,6 @@ export const photoMeta = {
   },
   dubai: {
     // Location: West Beach, Palm Jumeirah; description «West Beach The Palm Jumeirah».
-    alt: 'Небоскрёбы Дубай Марины через залив с пляжа на Пальме Джумейра, на воде катера',
-    caption: 'Дубай Марина, вид с Пальмы Джумейра',
     place: null,
     credit: 'Jeffrey Francisco',
     license: UNSPLASH,
@@ -298,8 +276,6 @@ export const photoMeta = {
   },
   cambodia: {
     // Location: Koh Rong, Preah Sihanouk.
-    alt: 'Две наклонённые пальмы на пляже Кох Ронга на закате, острова на горизонте, мокрый песок',
-    caption: 'Кох Ронг, побережье Сиануквиля',
     place: null,
     credit: 'Jules Nehlig',
     license: UNSPLASH,
@@ -307,8 +283,6 @@ export const photoMeta = {
   },
   kamala: {
     // Author's description: «Kamala Phuket Thailand sea view».
-    alt: 'Скрытый пляж в Камале под лесистыми холмами: полоса песка, бирюзовая вода, на другом берегу бухты холм Патонга под дождевой тучей',
-    caption: 'Камала, западное побережье Пхукета',
     place: 'kamala',
     credit: 'Max Bvp',
     license: UNSPLASH,
@@ -316,8 +290,6 @@ export const photoMeta = {
   },
   banana: {
     // Location: Choeng Thale, Thalang; description «Banana Phuket». The cove north of Layan.
-    alt: 'Бухта Банана на северо-западе Пхукета: бирюзовая вода, лесистый мыс с одной виллой, гранитные валуны на переднем плане',
-    caption: 'Пляж Банана, Чонг Тале, 3 км к северу от Банг Тао',
     place: 'bang-tao',
     credit: 'Max Bvp',
     license: UNSPLASH,
@@ -325,8 +297,6 @@ export const photoMeta = {
   },
   naiharnRocks: {
     // Location: Nai Harn Beach, Rawai.
-    alt: 'Пляж Най Харн сверху: диагональ песка между бирюзовой водой и деревьями, ряды синих зонтиков',
-    caption: 'Най Харн, юго-западное побережье Пхукета',
     place: 'nai-harn',
     credit: 'Aleksandr Galichkin',
     license: UNSPLASH,
@@ -334,8 +304,6 @@ export const photoMeta = {
   },
   condo: {
     // Location: Hua Hin, not Phuket. A format example.
-    alt: 'Малоэтажный кондоминиум с общим бассейном: террасы и балконы, деревья и газон вдоль воды',
-    caption: 'Пример формата: кондоминиум с общим бассейном',
     place: null,
     credit: 'allPhoto Bangkok',
     license: UNSPLASH,
@@ -343,8 +311,6 @@ export const photoMeta = {
   },
   house: {
     // No location. A format example.
-    alt: 'Современный одноэтажный дом с деревянной облицовкой, бассейном и газоном под деревьями',
-    caption: 'Пример формата: дом для жизни',
     place: null,
     credit: 'Ronaldo Rizzutti',
     license: UNSPLASH,
@@ -352,8 +318,6 @@ export const photoMeta = {
   },
   bigBuddha: {
     // Location field: Karon (the statue's subdistrict); Nakkerd hill rises between Chalong and Kata.
-    alt: 'Большой Будда на холме Наккерд: белая статуя над лесистыми склонами, внизу побережье и море',
-    caption: 'Большой Будда на холме Наккерд, над Чалонгом и Катой',
     place: null,
     credit: 'Aleksandr Galichkin',
     license: UNSPLASH,
@@ -361,8 +325,6 @@ export const photoMeta = {
   },
   baliVilla: {
     // Location: Ubud, Gianyar, Bali. An example of the format, not a client property.
-    alt: 'Вилла в Убуде: стеклянный павильон под скатной крышей, шезлонги и зонты на террасе у бассейна, тропическая зелень',
-    caption: 'Пример объекта: вилла с бассейном, Убуд, Бали',
     place: null,
     credit: 'Nerissa J',
     license: UNSPLASH,
@@ -370,8 +332,6 @@ export const photoMeta = {
   },
   dubaiHome: {
     // Location: The Address Dubai Marina. An example of the format, not a client property.
-    alt: 'Жилые башни Дубай Марины с террасы с бассейном: небоскрёбы над каналом с яхтами',
-    caption: 'Пример объекта: апартаменты в Дубай Марине',
     place: null,
     credit: 'Nick Fewings',
     license: UNSPLASH,
@@ -379,8 +339,6 @@ export const photoMeta = {
   },
   pattayaCondo: {
     // Location: Pattaya, Banglamung, Chonburi. An example of the format, not a client property.
-    alt: 'Две высотные башни кондоминиумов у моря в Паттайе, внизу зелёный квартал, на горизонте острова',
-    caption: 'Пример объекта: кондоминиумы у моря, Паттайя',
     place: null,
     credit: 'Kseniia Ilinykh',
     license: UNSPLASH,
@@ -388,8 +346,6 @@ export const photoMeta = {
   },
   cambodiaCondo: {
     // The author's description names Sihanoukville. An example of the format, not a client property.
-    alt: 'Высотный жилой комплекс на берегу в Сиануквиле с высоты: башня у пляжа, бирюзовое море, насыпной полуостров',
-    caption: 'Пример объекта: жилой комплекс у моря, Сиануквиль',
     place: null,
     credit: 'Sim Kimhort',
     license: UNSPLASH,
@@ -398,24 +354,24 @@ export const photoMeta = {
 } as const satisfies Record<PhotoKey, PhotoMeta>
 
 export type Credit = {
+  /** Also the key of its caption in the `photos` dictionary. */
   readonly key: PhotoKey
-  /** What the photo shows (the caption). */
-  readonly caption: string
   readonly author: string
   readonly license: string
   /** License URL, null if there is none. */
   readonly licenseUrl: string | null
   readonly sourceUrl: string
-  /** What we changed (required by CC licenses; for Unsplash photos stated anyway). */
-  readonly changes: string
   /** Share-alike license: our crops are published under the same license. */
   readonly shareAlike: boolean
-  /** Extra request from the author, if any. */
-  readonly note?: string
+  /**
+   * The author made an extra request (the sunset photo: his name in the caption). The sentence is
+   * `photoCredits.sunsetNote`; what we changed is `photoCredits.changes` (both in the dictionary).
+   */
+  readonly note?: boolean
 }
 
-const NOTES: Partial<Record<PhotoKey, string>> = {
-  sunset: 'По просьбе автора его имя стоит в подписи под фото',
+const NOTES: Partial<Record<PhotoKey, true>> = {
+  sunset: true,
 }
 
 const ORDER: PhotoKey[] = [
@@ -447,13 +403,11 @@ export const credits: readonly Credit[] = ORDER.map((key) => {
   const m: PhotoMeta = photoMeta[key]
   return {
     key,
-    caption: m.caption,
     author: m.credit,
     license: m.license,
     licenseUrl: LICENSE_URL[m.license] ?? null,
     sourceUrl: m.sourceUrl,
-    changes: 'Кадрирование и цветокоррекция',
     shareAlike: m.license.includes('BY-SA'),
-    ...(NOTES[key] ? { note: NOTES[key] } : {}),
+    ...(NOTES[key] ? { note: true } : {}),
   }
 })

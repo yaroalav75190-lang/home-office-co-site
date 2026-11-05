@@ -1,6 +1,8 @@
+import { getDictionary } from '@/i18n'
+import { htmlLang, type Locale, localizePath } from '@/i18n/config'
 import { JsonLd } from '@/lib/seo/json-ld'
 import { contacts, site } from '@/lib/site'
-import { ORG_ID, SITE_ORIGIN, absoluteUrl } from '../shared/site-url'
+import { ORG_ID, absoluteUrl } from '../shared/site-url'
 
 /**
  * Home JSON-LD (seo-brief §4.1, §6.6): the full organisation record and WebSite.
@@ -13,8 +15,14 @@ import { ORG_ID, SITE_ORIGIN, absoluteUrl } from '../shared/site-url'
  *   knowsLanguage "en"  ← is there a broker who answers in English (copy-global §13.9)
  *   address             ← not set without a legal or real address (seo-brief §6.6)
  *   image               ← dedicated OG card; the hero crop stands in
+ * Words (description, countries, the brand in Cyrillic, the founder's name) come from the
+ * dictionary of the page's locale; `url` is the home page in that locale. The organisation keeps
+ * one `@id` for every language; each language version of the home page is its own WebSite.
  */
-export function HomeJsonLd() {
+export function HomeJsonLd({ locale }: { locale: Locale }) {
+  const { home, common } = getDictionary(locale)
+  const t = home.jsonLd
+  const homeUrl = absoluteUrl(localizePath(locale, '/'))
   const phone = contacts.phone.placeholder ? null : contacts.phone.href.replace(/^tel:/, '')
   const email = contacts.email.placeholder ? null : contacts.email.href.replace(/^mailto:/, '')
 
@@ -23,13 +31,13 @@ export function HomeJsonLd() {
     '@type': 'RealEstateAgent',
     '@id': ORG_ID,
     name: site.name,
-    alternateName: ['Home Office and Co', 'Хоум Офис энд Ко'],
-    url: `${SITE_ORIGIN}/`,
+    alternateName: ['Home Office and Co', ...t.alternateNames],
+    url: homeUrl,
     image: absoluteUrl('/photos/graded/hero-3x2.jpg'),
-    description: 'Международное агентство недвижимости: Таиланд (Пхукет, Паттайя), Бали, Дубай, Камбоджа.',
-    areaServed: ['Таиланд', 'Индонезия', 'Объединённые Арабские Эмираты', 'Камбоджа'],
+    description: t.description,
+    areaServed: t.areaServed,
     knowsLanguage: ['ru'],
-    founder: { '@type': 'Person', name: 'Иван' },
+    founder: { '@type': 'Person', name: common.founder.name },
     ...(phone
       ? {
           telephone: phone,
@@ -42,11 +50,11 @@ export function HomeJsonLd() {
   const website = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    '@id': `${SITE_ORIGIN}/#website`,
+    '@id': `${homeUrl}#website`,
     name: site.name,
     alternateName: 'Home Office and Co',
-    url: `${SITE_ORIGIN}/`,
-    inLanguage: 'ru',
+    url: homeUrl,
+    inLanguage: htmlLang[locale],
     publisher: { '@id': ORG_ID },
   }
 

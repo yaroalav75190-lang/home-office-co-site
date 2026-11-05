@@ -65,6 +65,8 @@ type IslandMapProps = {
   names: Record<DistrictId, string>
   /** Accessible name of the drawing. */
   label: string
+  /** Accessible name of the list of district labels. */
+  navLabel: string
   className?: string
 }
 
@@ -76,7 +78,7 @@ type IslandMapProps = {
  *
  * The box keeps the island's aspect ratio; give it a height (or let a parent stretch it).
  */
-export function IslandMap({ names, label, className }: IslandMapProps) {
+export function IslandMap({ names, label, navLabel, className }: IslandMapProps) {
   return (
     <div className={clsx('relative aspect-[415/1000]', className)}>
       <Coast
@@ -86,7 +88,7 @@ export function IslandMap({ names, label, className }: IslandMapProps) {
         data-coast-draw=""
         className="absolute inset-0 size-full text-ink-muted [&_[data-district]]:text-laterite [&_[data-district]]:[stroke-width:3]"
       />
-      <nav aria-label="Районы на карте">
+      <nav aria-label={navLabel}>
         <ul role="list" className="type-small">
           {districts.map((d) => {
             const position = labelPosition(d.id)

@@ -6,7 +6,7 @@
 
 Данные береговой линии © участники OpenStreetMap, лицензия ODbL 1.0 (<https://www.openstreetmap.org/copyright>). Снимок данных: **2 ноября 2026** (`OSM_DATA_DATE`, поле `osmDate` в каждом файле данных).
 
-На каждой странице с берегом должна быть строка атрибуции. Достаточно строки в футере «Карты © участники OpenStreetMap» со ссылкой на `OSM_LICENSE_URL`; текст есть в `OSM_ATTRIBUTION`. В `/credits` и в THIRD-PARTY-NOTICES стоит добавить: «Береговая линия: © участники OpenStreetMap, ODbL 1.0, данные на 02.11.2026, упрощено». Производные пути (наши SVG) остаются под ODbL.
+На каждой странице с берегом должна быть строка атрибуции. Достаточно строки в футере «Карты © участники OpenStreetMap» со ссылкой на `OSM_LICENSE_URL`; текст есть в словаре: `places.osmAttribution` (src/i18n/<locale>/places.ts). В `/credits` и в THIRD-PARTY-NOTICES стоит добавить: «Береговая линия: © участники OpenStreetMap, ODbL 1.0, данные на 02.11.2026, упрощено». Производные пути (наши SVG) остаются под ODbL.
 
 ## Побережья
 

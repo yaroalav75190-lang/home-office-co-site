@@ -1,14 +1,13 @@
 import { clsx } from 'clsx'
 import { Coast } from '@/components/coast'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
+import type { HomeDict } from '@/i18n/ru/home'
 import { site } from '@/lib/site'
 import { GuideForm } from './guide-form'
 
-const copy = {
-  title: 'Пхукет без приукрашивания',
-  text: 'Гид инвестора для покупателей из России, 2026/27. Восемь глав на 20 минут чтения: что может купить иностранец, как законно оплатить покупку, где жить и где сдавать, чего ждать от аренды.',
-  coverSubtitle: 'Гид инвестора для покупателей из России',
-  coverYear: '2026/27',
-} as const
+/** Words of the block: `home.guide` in the dictionary (the form has its own, in `forms`). */
+type GuideCopy = HomeDict['guide']
 
 /**
  * Investor guide block (art-direction §6 «Главная» 9, copy-home §9): ink field; h2, text and the
@@ -20,7 +19,8 @@ const copy = {
  *
  * Spacing: `mt-section py-section` — a section gap of salt above the field, then the field.
  */
-export function GuideBlock({ id = 'gid', className }: { id?: string; className?: string }) {
+export function GuideBlock({ locale, id = 'gid', className }: { locale: Locale; id?: string; className?: string }) {
+  const copy = getDictionary(locale).home.guide
   const headingId = `${id}-title`
   return (
     <section
@@ -42,7 +42,7 @@ export function GuideBlock({ id = 'gid', className }: { id?: string; className?:
         </div>
 
         <div className="col-span-full mt-20 md:col-span-5 md:col-start-2 lg:col-span-5 lg:col-start-8 lg:mt-0">
-          <GuideCover />
+          <GuideCover copy={copy} />
         </div>
       </div>
     </section>
@@ -50,7 +50,7 @@ export function GuideBlock({ id = 'gid', className }: { id?: string; className?:
 }
 
 /** Cover 4:5 typeset in the system: an ink-raised sheet, the island drawn in laterite-on-ink. */
-function GuideCover() {
+function GuideCover({ copy }: { copy: GuideCopy }) {
   return (
     <div
       aria-hidden="true"

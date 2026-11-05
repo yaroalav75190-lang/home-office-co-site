@@ -1,9 +1,11 @@
 import { clsx } from 'clsx'
 import type { ReactNode } from 'react'
 import { Figure } from '@/components/ui/figure'
+import type { Locale } from '@/i18n/config'
 import type { PhotoKey, PhotoRatio } from '@/lib/photos'
 
 type PanoramaProps<K extends PhotoKey> = {
+  locale: Locale
   photo: K
   ratio: PhotoRatio<K>
   /** Own crop under 768 px (art-direction §3.6). */
@@ -22,6 +24,7 @@ type PanoramaProps<K extends PhotoKey> = {
  * the photo opens from the bottom as it enters (on arrival through the curtain, as the panel lifts).
  */
 export function Panorama<K extends PhotoKey>({
+  locale,
   photo,
   ratio,
   mobileRatio,
@@ -33,6 +36,7 @@ export function Panorama<K extends PhotoKey>({
   return (
     <div data-parallax="" data-reveal="clip" className={clsx('col-span-full', className)}>
       <Figure
+        locale={locale}
         photo={photo}
         ratio={ratio}
         mobileRatio={mobileRatio}

@@ -20,6 +20,9 @@ import { Coast, Locator } from '@/components/coast'
 import type { DistrictId } from '@/components/coast/types'
 import { Figure } from '@/components/ui/figure'
 import { TextLink } from '@/components/ui/text-link'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
+import { fmt } from '@/i18n/format'
 import { photoMeta, type PhotoKey } from '@/lib/photos'
 import { DistrictSceneMotion } from './district-scene-motion'
 
@@ -37,17 +40,19 @@ export type DistrictSceneItem = {
   photoCaption?: string
   /** District page, e.g. `/thailand/phuket/bang-tao`. */
   href?: string
-  /** Link text for `href`. Default «{name} подробно» (copy-home §4: «Банг Тао подробно»). */
+  /** Link text for `href`. Default `home.districts.more`, «{name} подробно» (copy-home §4: «Банг Тао подробно»). */
   linkLabel?: string
 }
 
 export type DistrictSceneProps = {
+  /** Language of the scene's own words (`home.districts` in the dictionary) and photo texts. */
+  locale: Locale
   districts: DistrictSceneItem[]
   /** Section h2 (D2). Pass it: district names are h3. */
   title?: string
   /** Lead next to the h2. */
   lead?: string
-  /** Screen-reader name of the island. */
+  /** Screen-reader name of the island. Default `home.districts.mapLabel`. */
   mapLabel?: string
   /** id of the <section> (anchor target). */
   id?: string
@@ -55,14 +60,16 @@ export type DistrictSceneProps = {
 }
 
 export function DistrictScene({
+  locale,
   districts,
   title,
   lead,
-  mapLabel = 'Карта Пхукета, шесть районов с севера на юг',
+  mapLabel,
   id = 'gde-zhit',
   className,
 }: DistrictSceneProps) {
   const headingId = `${id}-title`
+  const words = getDictionary(locale).home.districts
 
   return (
     <section
@@ -101,7 +108,7 @@ export function DistrictScene({
             <Coast
               id="phuket-island"
               districts
-              title={mapLabel}
+              title={mapLabel ?? words.mapLabel}
               className={clsx(
                 'h-[min(60svh,32rem)] w-auto text-ink-muted',
                 'lg:h-[calc(100svh-var(--header-h)-4rem)] lg:max-h-[80svh]',
@@ -115,12 +122,12 @@ export function DistrictScene({
           >
             <ol data-scene-panels="" className="space-y-24 lg:space-y-section">
               {districts.map((d) => (
-                <DistrictPanel key={d.id} district={d} />
+                <DistrictPanel key={d.id} district={d} locale={locale} moreLabel={words.more} />
               ))}
             </ol>
 
             {/* Scene navigation: shown only in the pinned layout; anchors work without JS anyway. */}
-            <nav aria-label="Районы Пхукета" data-scene-nav="" className="mt-12 hidden">
+            <nav aria-label={words.navLabel} data-scene-nav="" className="mt-12 hidden">
               <ul className="type-ui flex flex-wrap gap-x-6 gap-y-2">
                 {districts.map((d) => (
                   <li key={d.id}>
@@ -142,7 +149,16 @@ export function DistrictScene({
   )
 }
 
-function DistrictPanel({ district: d }: { district: DistrictSceneItem }) {
+function DistrictPanel({
+  district: d,
+  locale,
+  moreLabel,
+}: {
+  district: DistrictSceneItem
+  locale: Locale
+  /** «{name} подробно»: default link text for `href`. */
+  moreLabel: string
+}) {
   const nameId = `rajon-${d.id}-name`
   const place = d.photo ? photoMeta[d.photo].place : null
 
@@ -179,7 +195,7 @@ function DistrictPanel({ district: d }: { district: DistrictSceneItem }) {
             {d.href ? (
               <p className="mt-8">
                 <TextLink href={d.href} className="type-ui">
-                  {d.linkLabel ?? `${d.name} подробно`}
+                  {d.linkLabel ?? fmt(moreLabel, { name: d.name })}
                 </TextLink>
               </p>
             ) : null}
@@ -189,6 +205,7 @@ function DistrictPanel({ district: d }: { district: DistrictSceneItem }) {
           <div data-reveal="clip" className="md:self-start">
             {d.photo ? (
               <Figure
+                locale={locale}
                 photo={d.photo}
                 ratio="3x2"
                 sizes="(min-width: 64rem) 25vw, (min-width: 48rem) 50vw, 100vw"

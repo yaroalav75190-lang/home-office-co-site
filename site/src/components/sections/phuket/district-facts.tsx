@@ -1,4 +1,5 @@
-import type { DistrictPage } from './districts'
+import type { Locale } from '@/i18n/config'
+import type { DistrictPageCopy } from './districts'
 import { Rich, typo } from './text'
 
 /**
@@ -6,17 +7,17 @@ import { Rich, typo } from './text'
  * paragraphs in columns 1–5; the facts as a `dl` without rules in 7–12, label Small ink-muted
  * over the value in Lead. Placeholders stay visible in quiet ink-muted.
  */
-export function DistrictFacts({ facts }: { facts: DistrictPage['facts'] }) {
+export function DistrictFacts({ locale, facts }: { locale: Locale; facts: DistrictPageCopy['facts'] }) {
   return (
     <section aria-labelledby="facts-title" className="grid-site gap-y-16 pt-section">
       <div className="col-span-full md:col-span-6 lg:col-span-5">
         <h2 id="facts-title" data-reveal="lines" className="type-d2">
-          {typo(facts.title)}
+          {typo(facts.title, locale)}
         </h2>
         <div data-reveal="fade" className="type-body mt-10 flex max-w-[48ch] flex-col gap-5 lg:mt-14">
           {facts.paragraphs.map((p) => (
             <p key={p}>
-              <Rich text={p} />
+              <Rich text={p} locale={locale} />
             </p>
           ))}
         </div>
@@ -36,7 +37,7 @@ export function DistrictFacts({ facts }: { facts: DistrictPage['facts'] }) {
           >
             <dt className="type-small text-ink-muted">{item.term}</dt>
             <dd className="type-lead mt-2 max-w-[44ch]">
-              <Rich text={item.value} />
+              <Rich text={item.value} locale={locale} />
             </dd>
           </div>
         ))}

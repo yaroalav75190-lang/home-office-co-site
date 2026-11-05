@@ -1,7 +1,9 @@
 import { Locator } from '@/components/coast'
 import { Figure } from '@/components/ui/figure'
 import { TextLink } from '@/components/ui/text-link'
-import { processSection } from './content'
+import { getDictionary } from '@/i18n'
+import type { Locale } from '@/i18n/config'
+import { links } from './content'
 
 /**
  * «От звонка до ключей» (art-direction §6 «Главная» 6; taste-skill «Photographs down a diagonal»).
@@ -17,7 +19,8 @@ import { processSection } from './content'
  *
  * Mobile: heading, Ката full width, Най Харн 62 % flush right, the stages, Камала 78 % flush left.
  */
-export function HomeProcess() {
+export function HomeProcess({ locale }: { locale: Locale }) {
+  const processSection = getDictionary(locale).home.process
   const { captions } = processSection
   return (
     <section aria-labelledby="home-process" className="grid-site pt-section">
@@ -35,6 +38,7 @@ export function HomeProcess() {
       <div className="contents lg:col-span-6 lg:col-start-1 lg:row-start-1 lg:grid lg:grid-cols-subgrid lg:content-start">
         <div data-reveal="clip" className="order-1 col-span-full mt-heading lg:order-none lg:col-span-4 lg:mt-0">
           <Figure
+            locale={locale}
             photo="kata"
             ratio="4x5"
             sizes="(min-width: 64rem) 33vw, 100vw"
@@ -53,7 +57,7 @@ export function HomeProcess() {
             ))}
           </ol>
           <p className="type-ui mt-12">
-            <TextLink href={processSection.link.href}>{processSection.link.label}</TextLink>
+            <TextLink href={links.deal}>{processSection.link}</TextLink>
           </p>
         </div>
       </div>
@@ -65,6 +69,7 @@ export function HomeProcess() {
           className="order-2 col-span-full mt-12 ml-auto w-[62%] md:w-1/2 lg:order-none lg:col-span-3 lg:col-start-1 lg:mt-[220px] lg:ml-0 lg:w-auto"
         >
           <Figure
+            locale={locale}
             photo="naiharn"
             ratio="1x1"
             sizes="(min-width: 64rem) 25vw, 62vw"
@@ -77,6 +82,7 @@ export function HomeProcess() {
           className="order-4 col-span-full mt-16 w-[78%] md:w-2/3 lg:order-none lg:col-span-5 lg:col-start-3 lg:mt-[180px] lg:w-auto"
         >
           <Figure
+            locale={locale}
             photo="condo"
             ratio="3x2"
             sizes="(min-width: 64rem) 42vw, 78vw"

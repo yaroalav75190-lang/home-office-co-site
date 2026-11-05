@@ -1,12 +1,13 @@
 // POST /api/lead — every form of the site posts here through `submitLead` (`@/lib/lead`).
 //
 // Request:  { type: 'quiz'|'consultation'|'viewing'|'guide', fields: Record<string,string>,
-//             page: '/path', meta?: { utm_*, yclid, gclid, landing, referrer, ymUid, gaCid } }
+//             page: '/path', locale?: 'ru'|'en'|'es', meta?: { utm_*, yclid, gclid, landing, referrer, ymUid, gaCid } }
 // Responses (JSON, never cached):
 //   200 { ok: true, id }                         delivered (or a honeypot hit with invalid fields: a
 //                                                bot, silently accepted; with valid fields the lead is
 //                                                delivered marked «скрытое поле», see below)
-//   400 { ok: false, error: 'validation', fieldErrors: { name: '…', … } }   wording: copy-global §8.3
+//   400 { ok: false, error: 'validation', fieldErrors: { name: '…', … } }   wording: copy-global §8.3, in the
+//                                                submitted locale (forms dictionary)
 //   400 { ok: false, error: 'bad_request' }      not JSON, unknown type, body over 16 KB
 //   409 { ok: false, error: 'duplicate' }        same type + contact + answers delivered in the last
 //                                                10 minutes (changed answers make a new lead)
@@ -20,6 +21,8 @@
 // full fields are logged only by the development delivery (deliver.ts).
 
 import type { NextRequest } from 'next/server'
+import { getDictionary } from '@/i18n'
+import { type Locale, isLocale } from '@/i18n/config'
 import {
   HONEYPOT_FIELD,
   LEAD_FIELDS,
@@ -104,6 +107,8 @@ export async function POST(request: NextRequest) {
 
   const type = body.type as LeadType
   const page = typeof body.page === 'string' && body.page.startsWith('/') ? body.page.slice(0, 200) : 'unknown'
+  // Language of the page with the form: field errors come back in it, and the broker sees it.
+  const locale: Locale = isLocale(body.locale) ? body.locale : 'ru'
 
   if (!allowRequest(ip)) {
     // A real visitor behind a shared IP (office, mobile CGNAT, a proxy without X-Forwarded-For)
@@ -134,13 +139,13 @@ export async function POST(request: NextRequest) {
   const honeypot = Boolean(fields[HONEYPOT_FIELD])
   delete fields[HONEYPOT_FIELD]
 
-  const fieldErrors = validateLeadFields(type, fields, started)
+  const fieldErrors = validateLeadFields(type, fields, getDictionary(locale).forms.messages, started)
   if (Object.keys(fieldErrors).length) {
     if (honeypot) {
       log(200, { type, page, spam: 'honeypot', invalid: Object.keys(fieldErrors) })
       return reply(200, { ok: true, id })
     }
-    log(400, { type, page, error: 'validation', fields: Object.keys(fieldErrors) })
+    log(400, { type, page, locale, error: 'validation', fields: Object.keys(fieldErrors) })
     return reply(400, { ok: false, error: 'validation', fieldErrors })
   }
 
@@ -168,6 +173,7 @@ export async function POST(request: NextRequest) {
     id,
     type,
     page,
+    locale,
     fields,
     meta,
     score,
@@ -187,6 +193,7 @@ export async function POST(request: NextRequest) {
   const summary = {
     type,
     page,
+    locale,
     score,
     temperature,
     channel,
