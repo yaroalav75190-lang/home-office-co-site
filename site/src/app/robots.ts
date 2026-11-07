@@ -1,13 +1,17 @@
 import type { MetadataRoute } from 'next'
+import { SITE_ORIGIN } from '@/components/sections/shared/site-url'
+import { NOINDEX } from '@/lib/seo/noindex'
 
 // robots.txt (seo-brief §6.4). Allow everything except service routes; /_next/static and /_next/image
 // stay open so robots can render the page. /s/{token} is deliberately not listed: it is closed with
 // noindex headers, a robots.txt block would hide those from the crawler (§6.4, §6.5).
 //
-// TODO(launch): keep equal to `metadataBase` in src/components/layout/site-shell.tsx (see the note in app/sitemap.ts).
-const ORIGIN = 'https://homeofficeco.com'
+// The origin is the one of `metadataBase` and the sitemap (sections/shared/site-url.ts).
+const ORIGIN = SITE_ORIGIN
 
 export default function robots(): MetadataRoute.Robots {
+  // A preview for the client (SITE_NOINDEX=1): nothing to crawl, no sitemap.
+  if (NOINDEX) return { rules: [{ userAgent: '*', disallow: '/' }] }
   return {
     rules: [
       {

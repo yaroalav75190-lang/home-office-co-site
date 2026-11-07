@@ -16,12 +16,14 @@ import { MotionRoot } from '@/components/motion/motion-root'
 import { SmoothScroll } from '@/components/motion/smooth-scroll'
 import { TransitionProvider } from '@/components/motion/transition-provider'
 import { AnalyticsBridge } from '@/components/sections/forms/form-kit'
+import { SITE_ORIGIN } from '@/components/sections/shared/site-url'
 import { Figure } from '@/components/ui/figure'
 import { InlineScript } from '@/components/ui/inline-script'
 import { getClientMessages, getDictionary } from '@/i18n'
 import { LocaleProvider } from '@/i18n/client'
 import { type Locale, htmlLang, ogLocale } from '@/i18n/config'
 import { replyTimeBootScript } from '@/lib/reply-time'
+import { NOINDEX } from '@/lib/seo/noindex'
 import { site } from '@/lib/site'
 
 // Display: narrow Didone with full Cyrillic; the wdth axis (62.5–100) sets width per step (§3.2–3.3).
@@ -43,15 +45,17 @@ const sans = Onest({
 /** Root metadata of a locale; pages add their own title, description, alternates and Open Graph. */
 export function shellMetadata(locale: Locale): Metadata {
   return {
-    // Promo domain (docs/DEMO_DECISIONS.md), the client confirms it before launch (seo-brief §6.2). Keep equal to SITE_ORIGIN in sections/shared/site-url.ts.
-    metadataBase: new URL('https://homeofficeco.com'),
+    // Promo domain (docs/DEMO_DECISIONS.md), the client confirms it before launch (seo-brief §6.2).
+    // The same origin as JSON-LD, robots.txt and sitemap.xml (sections/shared/site-url.ts).
+    metadataBase: new URL(SITE_ORIGIN),
     title: {
       default: site.name,
       template: `%s | ${site.name}`,
     },
     description: getDictionary(locale).meta.site.description,
     applicationName: site.name,
-    robots: { index: true, follow: true },
+    // A preview for the client (SITE_NOINDEX=1, docs/DEMO_DECISIONS.md) stays out of search engines.
+    robots: NOINDEX ? { index: false, follow: false } : { index: true, follow: true },
     openGraph: {
       siteName: site.name,
       locale: ogLocale[locale],
