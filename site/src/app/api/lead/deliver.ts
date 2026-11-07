@@ -294,7 +294,9 @@ export async function deliverLead(lead: NormalizedLead): Promise<DeliveryReport>
   if (!amo && !tg) {
     // Development, or a promo run started with LEAD_DEMO_NO_DELIVERY=1 (`pnpm demo`): the server
     // log is the delivery. Never set the flag on a public deploy: visitors would see «спасибо»
-    // while nothing reaches the broker. It is ignored as soon as either channel is configured.
+    // while nothing reaches the broker. The one hosted exception is the closed preview for the
+    // client (SITE_NOINDEX=1 beside it, docs/DEMO_DECISIONS.md «Показ на Vercel»). It is ignored as
+    // soon as either channel is configured.
     const demo = process.env.LEAD_DEMO_NO_DELIVERY === '1'
     if (process.env.NODE_ENV !== 'production' || demo) {
       if (demo) console.warn(JSON.stringify({ evt: 'lead.demo_no_delivery', id: lead.id }))

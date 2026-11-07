@@ -33,6 +33,9 @@ const nextConfig: NextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+          // A preview for the client (SITE_NOINDEX=1, src/lib/seo/noindex.ts): pages, images and
+          // files alike stay out of search engines.
+          ...(process.env.SITE_NOINDEX === '1' ? [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] : []),
         ],
       },
     ]
