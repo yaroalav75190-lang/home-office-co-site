@@ -1,0 +1,12 @@
+# What `vercel deploy` uploads from this folder (the Vercel project builds in site/, its Root Directory).
+# Only the site: no brief, prototypes, tools, photo sources, local builds or dependencies.
+/*
+!/site
+/site/node_modules
+/site/.next
+/site/.next-check
+/site/photos-src
+/site/.env
+/site/.env.*
+/site/*.log
+/site/.vercel
